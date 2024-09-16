@@ -1,6 +1,6 @@
 from django.urls import path # type: ignore
 from . import views
-from .views import  CustomObtainAuthToken,  CompanyListCreateView, CompanyDetailView
+from .views import  CustomObtainAuthToken,  CompanyListCreateView, CompanyDetailView, DeleteAccountView
 
 urlpatterns = [
     path('home', views.home, name='home'),
@@ -30,4 +30,19 @@ urlpatterns = [
     path('fetch_contry_types/', views.fetch_country_types, name='fetch_contry_types'),
     path('fetch_status/', views.fetch_status_choices, name='fetch_status'),
     path('api-token-auth/', CustomObtainAuthToken.as_view(), name='api_token_auth'),
+    path('application-status-counts/', views.application_status_counts, name='application_status_counts'),
+    path('fetch-applied-jobs/', views.filter_applied_jobs, name='filter_applied_jobs'),
+    path('sort-saved-jobs/', views.sort_saved_jobs, name='sort-saved-jobs'),
+    path('delete-account/', DeleteAccountView.as_view(), name='delete_account'),
+    path('get-messages/', views.getMessages, name='getMessages'),
+    path('inbox/', views.myInbox, name='inbox'),
+    path('send-message/', views.sendMessage, name='sendMessage'),
+    path('search-contacts/', views.searchUser, name='searchUser'),
+    path('create-job-alerts/', views.create_job_alert, name='create-job-alert'),
+    path('save-student/', views.save_student, name='save-student'),
+    path('fetch-skills/', views.fetch_jobs_by_student_skills, name='fetch-skills'),
+
+
+    
+    
 ]

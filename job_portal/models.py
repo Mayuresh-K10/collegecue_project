@@ -49,17 +49,24 @@ class Company(models.Model):
         return self.name
 
 class Resume(models.Model):
-    name = models.CharField(max_length=100, default='John Doe')
+    first_name = models.CharField(max_length=100, default='John')
+    last_name = models.CharField(max_length=100, default='John Doe')
     email = models.EmailField(default='example@example.com')
     phone = models.CharField(max_length=20, default='000-000-0000')
     address = models.TextField(default='N/A')
     date_of_birth = models.DateField(null=True, blank=True)
-    website_urls = models.JSONField(default=list)  # Use JSONField for storing multiple URLs
+    website_urls = models.JSONField(default=list)  
     skills = models.TextField(default='Not specified')
-    achievements_and_awards = models.TextField(default='None')
     activities = models.TextField(default='None')
     interests = models.TextField(default='None')
     languages = models.TextField(default='None')
+    bio = models.TextField(default='None')
+    city = models.CharField(max_length=100, default='Mumbai')
+    state = models.CharField(max_length=100, default='Maharashtra')
+    country = models.CharField(max_length=100, default='India')
+    zipcode = models.CharField(max_length=6, default='522426')
+    Attachment = models.FileField(upload_to='attachments/',default='Unknown')
+    delete = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -106,6 +113,25 @@ class Reference(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Certification(models.Model):
+   resume = models.ForeignKey(Resume, related_name='certifications', on_delete=models.CASCADE)
+   name = models.CharField(max_length=100, default='Unknown')
+   start_date = models.DateField(null=True, blank=True)
+   end_date = models.DateField(null=True, blank=True)
+ 
+class Achievements(models.Model):
+    resume = models.ForeignKey(Resume, related_name='achievements', on_delete=models.CASCADE)
+    title = models.CharField(max_length=100, default='Unknown')
+    publisher = models.CharField(max_length=100, default='Unknown')
+    date_of_issue = models.DateField(null=True, blank=True)
+    
+class Publications(models.Model):
+    resume = models.ForeignKey(Resume, related_name='publications', on_delete=models.CASCADE)
+    title = models.CharField(max_length=100, default='Unknown')
+    publisher = models.CharField(max_length=100, default='Unknown')
+    date_of_publications = models.DateField(null=True, blank=True)   
+
 
 class CandidateStatus_selected(models.Model):
     candidate_name = models.CharField(max_length=255)
@@ -130,3 +156,35 @@ class CandidateStatus_under_review(models.Model):
     status = models.CharField(max_length=20,default='under_review')
     company_name = models.CharField(max_length=255)
     job_id = models.IntegerField()
+    
+class User(models.Model):
+    firstname = models.CharField(max_length=30)
+    lastname = models.CharField(max_length=30)
+    email = models.CharField(max_length=50,unique=True)
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, related_name='recipient', on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False) 
+    # is_primary=models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+
+class Attachment(models.Model):
+    message = models.ForeignKey('Message', related_name='attachments', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='attachments/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+class Student(models.Model):
+    first_name =  models.CharField(max_length=100, default='John')
+    last_name = models.CharField(max_length=100, default='Doe')
+    email = models.EmailField(default='example@example.com')
+    contact_no = models.CharField(max_length=20, default='000-000-0000')
+    qualification = models.TextField(default='N/A')
+    skills = models.TextField(default='Not specified')    
+    
+
+     

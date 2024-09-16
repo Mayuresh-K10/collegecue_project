@@ -4,10 +4,10 @@ from django.http import JsonResponse # type: ignore
 from django.middleware.csrf import get_token # type: ignore
 from django.views.decorators.csrf import csrf_exempt, csrf_protect # type: ignore
 from django.utils import timezone # type: ignore
-from django.db.models import Q # type: ignore
+from django.db.models import Q,Subquery, OuterRef # type: ignore
 from rest_framework.response import Response # type: ignore
-from .models import CandidateStatus_rejected, CandidateStatus_under_review, Job, Application, Company,CandidateStatus_selected,CandidateStatus_not_eligible, Resume
-from .forms import CompanyForm, EducationForm, ExperienceForm, JobForm, ApplicationForm, ObjectiveForm, ProjectForm, ReferenceForm, ResumeForm
+from .models import CandidateStatus_rejected, CandidateStatus_under_review, Job, Application, Company,CandidateStatus_selected,CandidateStatus_not_eligible, Resume, Student, User,Message,Attachment
+from .forms import AchievementForm, CertificationForm, CompanyForm, EducationForm, ExperienceForm, JobForm, ApplicationForm, ObjectiveForm, ProjectForm, PublicationForm, ReferenceForm, ResumeForm, StudentForm
 import json, operator
 from datetime import timedelta
 from django.utils.decorators import method_decorator # type: ignore
@@ -17,7 +17,6 @@ from rest_framework.authtoken.models import Token # type: ignore
 from rest_framework import status # type: ignore
 from functools import reduce
 from django.core.exceptions import ObjectDoesNotExist
-
 
 def home(request):
     try:
@@ -107,7 +106,8 @@ def job_list(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
+  
+@csrf_exempt
 def handle_post_request(request):
     try:
         data = json.loads(request.body)
@@ -366,23 +366,20 @@ def company_status(request, status_choice):
 def create_resume(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body.decode('utf-8'))
-
-            resume_data = data.get('resume', {})
-            resume_form = ResumeForm(resume_data)
-            objective_data = data.get('objective', {})
+            resume_form = ResumeForm(request.POST, request.FILES)
 
             if resume_form.is_valid():
                 resume = resume_form.save()
 
+                objective_data = request.POST.get('objective', {})
                 if objective_data:
-                    objective_form = ObjectiveForm(objective_data)
+                    objective_form = ObjectiveForm(json.loads(objective_data))
                     if objective_form.is_valid():
                         objective = objective_form.save(commit=False)
                         objective.resume = resume
                         objective.save()
 
-                education_data = data.get('education', [])
+                education_data = json.loads(request.POST.get('education', '[]'))
                 for item in education_data:
                     education_form = EducationForm(item)
                     if education_form.is_valid():
@@ -390,7 +387,7 @@ def create_resume(request):
                         education.resume = resume
                         education.save()
 
-                experience_data = data.get('experience', [])
+                experience_data = json.loads(request.POST.get('experience', '[]'))
                 for item in experience_data:
                     experience_form = ExperienceForm(item)
                     if experience_form.is_valid():
@@ -398,8 +395,7 @@ def create_resume(request):
                         experience.resume = resume
                         experience.save()
 
-
-                project_data = data.get('projects', [])
+                project_data = json.loads(request.POST.get('projects', '[]'))
                 for item in project_data:
                     project_form = ProjectForm(item)
                     if project_form.is_valid():
@@ -407,8 +403,7 @@ def create_resume(request):
                         project.resume = resume
                         project.save()
 
-
-                reference_data = data.get('references', [])
+                reference_data = json.loads(request.POST.get('references', '[]'))
                 for item in reference_data:
                     reference_form = ReferenceForm(item)
                     if reference_form.is_valid():
@@ -416,21 +411,48 @@ def create_resume(request):
                         reference.resume = resume
                         reference.save()
 
+                certifications_data = json.loads(request.POST.get('certifications', '[]'))
+                for item in certifications_data:
+                    certifications_form = CertificationForm(item)
+                    if certifications_form.is_valid():
+                        certifications = certifications_form.save(commit=False)
+                        certifications.resume = resume
+                        certifications.save()
+
+                achievements_data = json.loads(request.POST.get('achievements', '[]'))
+                for item in achievements_data:
+                    achievements_form = AchievementForm(item)
+                    if achievements_form.is_valid():
+                        achievements = achievements_form.save(commit=False)
+                        achievements.resume = resume
+                        achievements.save()
+
+                publications_data = json.loads(request.POST.get('publications', '[]'))
+                for item in publications_data:
+                    publications_form = PublicationForm(item)
+                    if publications_form.is_valid():
+                        publications = publications_form.save(commit=False)
+                        publications.resume = resume
+                        publications.save()
+
                 return JsonResponse({'status': 'success', 'resume_id': resume.id})
 
             return JsonResponse({'status': 'error', 'errors': resume_form.errors})
 
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+
         except IntegrityError:
             return JsonResponse({'status': 'error', 'message': 'Database integrity error'}, status=500)
+
         except OperationalError:
             return JsonResponse({'status': 'error', 'message': 'Database operational error'}, status=500)
+
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
-
 
 def get_resume_detail_by_id(request, resume_id):
     try:
@@ -438,17 +460,23 @@ def get_resume_detail_by_id(request, resume_id):
             resume = get_object_or_404(Resume, id=resume_id)
 
             resume_data = {
-                "name": resume.name,
+                "first_name": resume.first_name,
+                "last_name":resume.last_name,
                 "email": resume.email,
                 "phone": resume.phone,
                 "address": resume.address,
                 "date_of_birth": resume.date_of_birth,
                 "website_urls": resume.website_urls,
                 "skills": resume.skills,
-                "achievements_and_awards": resume.achievements_and_awards,
                 "activities": resume.activities,
                 "interests": resume.interests,
                 "languages": resume.languages,
+                "bio": resume.bio,
+                "city": resume.city,
+                "state": resume.state,
+                "country": resume.country,
+                "zipcode": resume.zipcode,
+                # "attachments": resume.Attachment,
                 "objective": resume.objective.text if hasattr(resume, 'objective') else 'Not specified',
                 "education": [
                     {
@@ -480,9 +508,30 @@ def get_resume_detail_by_id(request, resume_id):
                         "contact_info": reference.contact_info,
                         "relationship": reference.relationship,
                     } for reference in resume.references.all()
+                ],
+                "certifications": [
+                    {
+                        "name": certification.name,
+                        "start_date": certification.start_date,
+                        "end_date": certification.end_date, 
+                    } for certification in resume.certifications.all()
+                ],
+                "achievements": [
+                    {
+                        "title": achievement.title,
+                        "publisher": achievement.publisher,
+                        "date_of_issue": achievement.date_of_issue,
+                    } for achievement in resume.achievements.all()
+                ],
+                "publications": [
+                    {
+                        "title": publication.title,
+                        "publisher": publication.publisher,
+                        "date_of_publication": publication.date_of_publications,
+                    } for publication in resume.publications.all()
                 ]
             }
-
+            
             return JsonResponse(resume_data, status=200)
         else:
             return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -769,3 +818,371 @@ def fetch_status_choices(request):
             return JsonResponse({'error': 'Invalid request method.'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+def application_status_counts(request):
+    try:
+        email = request.GET.get('email')
+        if not email:
+            return JsonResponse({'error': 'Email parameter is required'}, status=400)
+
+        pending_count = Application.objects.filter(email=email, status='pending').count()
+        interview_scheduled_count = Application.objects.filter(email=email, status='interview_scheduled').count()
+        rejected_count = Application.objects.filter(email=email, status='rejected').count()
+
+        return JsonResponse({
+            'pending_count': pending_count,
+            'interview_scheduled': interview_scheduled_count,
+            'rejected_count': rejected_count
+        })
+
+    except Application.DoesNotExist:
+        return JsonResponse({'error': 'No applications found for the provided email.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': 'An error occurred', 'details': str(e)}, status=500)
+
+def filter_applied_jobs(request):
+    try:
+        email = request.GET.get('email')
+        if not email:
+            return JsonResponse({'error': 'Email parameter is required'}, status=400)
+
+        job_title = request.GET.get('job_title')
+        status = request.GET.get('status')
+        job_type = request.GET.get('job_type')
+        sort_by = request.GET.get('sort_by')  
+
+        applications = Application.objects.filter(email=email)
+        
+        if job_title:
+            applications = applications.filter(job__job_title=job_title) 
+            
+        if status:
+            applications = applications.filter(status=status)
+            
+        if job_type:
+            applications = applications.filter(job__job_type=job_type)
+
+        if sort_by == 'job_title_asc':
+            applications = applications.order_by('job__job_title')  
+        elif sort_by == 'job_title_desc':
+            applications = applications.order_by('-job__job_title')  
+        elif sort_by == 'applied_at_asc':
+            applications = applications.order_by('applied_at')  
+        elif sort_by == 'applied_at_desc':
+            applications = applications.order_by('-applied_at')  
+
+        result = []
+        for application in applications:
+            result.append({
+                'job_title': application.job.job_title,
+                'company': application.job.company,
+                'job_location': application.job.location,
+                'job_type': application.job.job_type,
+                'status': application.status,
+                'applied_at': application.applied_at,
+            })
+
+        return JsonResponse(result, safe=False)
+
+    except Application.DoesNotExist:
+        return JsonResponse({'error': 'No applications found for the provided email'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+      
+def sort_saved_jobs(request):
+    try:
+        job_type = request.GET.get('job_type')
+        category = request.GET.get('category')
+
+        jobs = Job.objects.all()
+
+        if job_type:
+            jobs = jobs.filter(job_type=job_type)
+
+        if category:
+            jobs = jobs.filter(category=category)
+            
+        if not (job_type or category):
+            return JsonResponse({'error': 'Please select at least one filter: job_type or category'}, status=400)
+
+        jobs_list = [{
+            'id': job.id,
+            'job_title': job.job_title,
+            'company': job.company,
+            'location': job.location,
+            'requirements': job.requirements,
+            'job_type': job.job_type,
+            'experience': job.experience,
+            'category': job.category,
+            'published_at': job.published_at,
+            'skills': job.skills,
+            'workplaceTypes': job.workplaceTypes,
+        } for job in jobs]
+
+        return JsonResponse({'saved_jobs': jobs_list}, safe=False)
+
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'Job not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteAccountView(View):
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'status': 'error', 'message': 'User is not authenticated'}, status=403)
+
+        confirm = request.POST.get('confirm')
+        if confirm is None:
+            return JsonResponse({'status': 'error', 'message': 'Confirm parameter is missing'}, status=400)
+
+        if confirm == 'yes':
+            request.user.delete()
+            return JsonResponse({'status': 'success', 'message': 'Account deleted successfully'}, status=200)
+        elif confirm == 'no':
+            return JsonResponse({'status': 'canceled', 'message': 'Account deletion canceled'}, status=400)
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid confirm value'}, status=400)
+
+   
+@csrf_exempt
+def myInbox(request):
+    if(request.method=="POST"):
+        try:
+            data = json.loads(request.body)
+            email = data['email']
+            filter = data['filter']
+
+            last_message_subquery = Message.objects.filter(
+                Q(sender__email=OuterRef('email'), recipient__email=email) |
+                Q(recipient__email=OuterRef('email'), sender__email=email)
+            ).order_by('-id').values_list('id', flat=True)[:1]
+
+
+            user_subquery = User.objects.filter(
+                Q(sender__recipient__email=email) | Q(recipient__sender__email=email)
+            ).annotate(
+                last_msg=Subquery(last_message_subquery)
+            ).values_list('last_msg', flat=True).order_by('-id')
+
+            messages_query = Message.objects.filter(
+                id__in=Subquery(user_subquery)
+            ).order_by('-id')
+
+            if filter == 'read':
+                messages_query = messages_query.filter(is_read=True)
+            elif filter == 'unread':
+                messages_query = messages_query.filter(is_read=False)
+            elif filter =='primary':
+                messages_query = messages_query.filter(is_primary=True)
+            
+            message_list = []
+            for message in messages_query:
+
+                attachments = message.attachments.all()
+
+                attachment_list = [{
+                    'id': attachment.id,
+                    'file_url': attachment.file.url,
+                    'uploaded_at': attachment.uploaded_at
+                } for attachment in attachments]
+
+                message_list.append({
+                    'id': message.id,
+                    'sender': message.sender.email,
+                    'recipient': message.recipient.email,
+                    'content': message.content,
+                    'timestamp': message.timestamp,
+                    'is_read': message.is_read,
+                    'attachments': attachment_list
+                })
+
+            return JsonResponse({
+                'status': 'success',
+                'messages': message_list
+            }, status=200)
+        
+        except Exception as e:
+            return JsonResponse({
+                'status': 'false',
+                'error': str(e)
+            }, status=500)
+
+
+@csrf_exempt
+def getMessages(request):
+    if request.method=="POST":
+        data = json.loads(request.body)
+        sender_email = data['sender_email']
+        recipient_email = data['recipient_email']
+
+        sender = User.objects.get(email=sender_email)
+        recipient = User.objects.get(email=recipient_email)
+
+        messages = Message.objects.filter(
+            Q(sender=sender, recipient=recipient) |
+            Q(sender=recipient, recipient=sender)
+        ).order_by('timestamp')
+
+        Message.objects.filter(
+            sender=sender,
+            recipient=recipient,
+            is_read=False
+        ).update(is_read=True)
+
+        message_list = []
+        for message in messages:
+            attachments = message.attachments.all()
+
+            attachment_list = [{
+                'id': attachment.id,
+                'file_url': attachment.file.url,
+                'uploaded_at': attachment.uploaded_at
+            } for attachment in attachments]
+
+            message_list.append({
+                'id': message.id,
+                'sender': message.sender.email,
+                'recipient': message.recipient.email,
+                'content': message.content,
+                'timestamp': message.timestamp,
+                'is_read': message.is_read,
+                'attachments': attachment_list
+            })
+
+
+        return JsonResponse({
+            'status': 'success',
+            'messages': message_list
+        }, status=200)
+
+
+@csrf_exempt
+def sendMessage(request):
+    if request.method == "POST":
+        try:
+            sender_email = request.POST['sender_email']
+            recipient_email = request.POST['recipient_email']
+            message_content = request.POST['content']
+
+            sender = get_object_or_404(User,email=sender_email)
+            recipient = get_object_or_404(User,email=recipient_email)
+            
+            if message_content=="":
+                return JsonResponse({'status': 'false', 'message': 'Message is empty'}, status=401)
+            
+            message = Message.objects.create(sender=sender,recipient=recipient,
+            content=message_content)
+
+            if request.FILES:
+                for file in request.FILES.getlist('attachments'):
+                    Attachment.objects.create(message=message, file=file)
+
+            return JsonResponse({'status': 'success', 'message': 'Message sent successfully!'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid request. Missing fields.'}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def searchUser(request):
+    if request.method=="GET":
+        query = request.GET.get('q', '').strip()
+        if query:
+            contacts = User.objects.filter(
+                Q(firstname__icontains=query) |
+                Q(lastname__icontains=query)
+            )
+
+            contact_list = list(contacts.values())
+            print(contact_list)
+
+            return JsonResponse({
+            'status': 'success',
+            'contacts': contact_list
+            }, status=200)
+        
+        else:
+            contacts = User.objects.all().values('id', 'firstname','lastname','email')
+            contact_list = list(contacts)
+
+            return JsonResponse({
+                'status': 'success',
+                'contacts': contact_list
+            }, status=200)
+            
+@csrf_exempt
+def save_student(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        form = StudentForm(data)
+        if form.is_valid():
+            form.save()  
+            return JsonResponse({'message': 'Student data saved successfully'}, status=201)
+        else:
+            return JsonResponse({'errors': form.errors}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def fetch_jobs_by_student_skills(request):
+    try:
+        if request.method == 'GET':
+            student_id = request.GET.get('student_id')
+
+            if not student_id:
+                return JsonResponse({'error': 'Please provide a student ID.'}, status=400)
+
+            try:
+                student = Student.objects.get(id=student_id)
+            except Student.DoesNotExist:
+                return JsonResponse({'error': 'Student not found.'}, status=404)
+
+            skills = student.skills
+            skills_list = [skill.strip().lower() for skill in skills.split(',')] if skills else []
+
+            jobs = Job.objects.all()
+            if skills_list:
+                queries = Q()
+                for skill in skills_list:
+                    queries |= Q(skills__icontains=skill)
+                jobs = jobs.filter(queries).distinct()
+
+            if not skills_list:
+                return JsonResponse({'error': 'No skills found for this student.'}, status=400)
+
+            job_list = []
+            for job in jobs:
+                job_list.append({
+                    'company_name': job.company,
+                    'job_title': job.job_title,
+                    'location': job.location,
+                    'job_type': job.job_type,
+                })
+
+            return JsonResponse({'jobs': job_list}, safe=False)
+        else:
+            return JsonResponse({'error': 'Invalid request method.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+def create_job_alert(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action is None:
+            return JsonResponse({'status': 'error', 'message': 'Action parameter is missing'}, status=400)
+        
+        if action == 'bookmark':
+            return JsonResponse("Created Job Alerts Successfully", safe=False)
+
+        elif action == 'apply':
+            return JsonResponse("Applied Successfully", safe=False)
+        
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+

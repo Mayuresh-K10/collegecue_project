@@ -1,5 +1,5 @@
 from django import forms # type: ignore
-from .models import Education, Experience, Job, Application, Company, Objective, Project, Reference, Resume
+from .models import Achievements, Certification, Education, Experience, Job, Application, Company, Objective, Project, Publications, Reference, Resume, Student
 
 class JobForm(forms.ModelForm):
     class Meta:
@@ -27,7 +27,7 @@ class CompanyForm(forms.ModelForm):
 class ResumeForm(forms.ModelForm):
     class Meta:
         model = Resume
-        fields = ['name', 'email', 'phone', 'address', 'date_of_birth', 'website_urls', 'skills', 'achievements_and_awards', 'activities', 'interests', 'languages']
+        fields = ['first_name','last_name', 'email', 'phone', 'address', 'date_of_birth', 'website_urls', 'skills', 'activities', 'interests', 'languages','bio','city','state','country','zipcode','Attachment','delete']
 
 class ObjectiveForm(forms.ModelForm):
     class Meta:
@@ -53,3 +53,26 @@ class ReferenceForm(forms.ModelForm):
     class Meta:
         model = Reference
         fields = ['name', 'contact_info', 'relationship']
+        
+class CertificationForm(forms.ModelForm):
+    class Meta:
+        model = Certification
+        fields = ['name','start_date','end_date']  
+              
+class AchievementForm(forms.ModelForm):
+    class Meta:
+        model = Achievements
+        fields = ['title','publisher','date_of_issue']
+          
+class PublicationForm(forms.ModelForm):
+    class Meta:
+        model = Publications
+        fields = ['title', 'publisher', 'date_of_publications']
+        
+# class DeleteAccountForm(forms.Form):
+    # confirm = forms.ChoiceField(choices=[('yes', 'Yes'), ('no', 'No')])
+    
+class StudentForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['first_name', 'last_name', 'email', 'contact_no', 'qualification','skills']    
