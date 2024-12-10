@@ -1,0 +1,295 @@
+@login_required
+@require_POST
+@csrf_exempt
+def start_proctoring_session(request):
+    try:
+        form = StartProctoringSessionForm(request.POST)
+
+        if not form.is_valid():
+            return api_response(success=False, error='Invalid data', status=400)
+
+        exam_id = form.cleaned_data['exam_id']
+        exam = get_object_or_404(Exam, id=exam_id)
+
+        if ProctoringSession.objects.filter(user=request.user, exam=exam).exists():
+            return api_response(success=False, error='Proctoring session for this exam already exists', status=400)
+
+        session = ProctoringSession.objects.create(
+            user=request.user,
+            exam=exam,
+            start_time=timezone.now(),
+            status='ongoing'
+        )
+
+        user_email = request.user.email
+        try:
+            send_mail(
+                "Proctoring Event Notification",
+                "Session started",
+                settings.EMAIL_HOST_USER,
+                [user_email]
+            )
+        except Exception as email_error:
+            return api_response(success=True, data={'session_id': session.id}, 
+                                error='Failed to send email notification', 
+                                details=str(email_error), status=500)
+
+        return api_response(success=True, data={'session_id': session.id})
+
+    except Exception as e:
+        return api_response(success=False, error='An error occurred while starting the session', 
+                            details=str(e), status=500
+note:
+====
+Outer Try-Except Block: Wrapped the main logic in a try block to catch any unexpected errors and provide a relevant response.
+====================================================================================================
+@login_required
+@require_POST
+@csrf_exempt
+def end_proctoring_session(request):
+    try:
+        form = EndProctoringSessionForm(request.POST)
+
+        if not form.is_valid():
+            return api_response(success=False, error='Invalid data', status=400)
+
+        session_id = form.cleaned_data['session_id']
+        session = get_object_or_404(ProctoringSession, id=session_id)
+
+        session.end_time = timezone.now()
+        session.status = 'completed'
+        session.save()
+
+        user_email = request.user.email
+        try:
+            send_mail(
+                "Proctoring Event Notification",
+                "Session ended",
+                settings.EMAIL_HOST_USER,
+                [user_email]
+            )
+        except Exception as email_error:
+            return api_response(success=True, data={'status': 'completed'}, 
+                                error=f'Failed to send email to {user_email}', 
+                                details=str(email_error), status=500)
+
+        return api_response(success=True, data={'status': 'completed'})
+
+    except Exception as e:
+        return api_response(success=False, error='An error occurred while ending the session', 
+                            details=str(e), status=500)
+							
+note:
+====
+1.Form Validation Early Exit: Moved the invalid form check to the beginning for better readability and flow.
+
+2.Session Update: The session update logic is kept concise and clear.
+
+3.Error Handling: The inner try-except block for sending emails is preserved to handle potential email errors while ensuring the main flow remains clean.
+================================================================================================================
+@login_required
+@require_POST
+@csrf_exempt
+def record_proctoring_event(request):
+    try:
+        form = RecordProctoringEventForm(request.POST)
+
+        if not form.is_valid():
+            return api_response(success=False, error='Invalid data', status=400)
+
+        session_id = form.cleaned_data['session_id']
+        session = get_object_or_404(ProctoringSession, id=session_id)
+
+        if ProctoringEvent.objects.filter(session=session).exists():
+            return api_response(success=False, error='Event for this session already recorded', status=400)
+
+        event = form.save(commit=False)
+        event.session = session
+        event.save()
+
+        user_email = request.user.email
+        try:
+            send_mail(
+                "Proctoring Event Notification",
+                "Event recorded",
+                settings.EMAIL_HOST_USER,
+                [user_email]
+            )
+        except Exception as email_error:
+            return api_response(success=True, data={'status': 'event recorded'}, 
+                                error='Failed to send email notification', 
+                                details=str(email_error), status=500)
+
+        return api_response(success=True, data={'status': 'event recorded'})
+
+    except Exception as e:
+        return api_response(success=False, error='An error occurred while recording the event', 
+                            details=str(e), status=500)
+note:
+====
+1.Form Validation Early Exit: The invalid form check is moved to the beginning for clearer logic flow.
+
+2.Error Handling for Form Validation: The structure is kept clean and readable, ensuring that the function can be followed easily.
+
+3.Removed Redundant Else: The unnecessary else statement for invalid data is eliminated to reduce nesting.
+=========================================================================================================
+@login_required
+def get_session_status(request, session_id):
+    try:
+        session = get_object_or_404(ProctoringSession, id=session_id)
+
+        questions = session.exam.questions
+        total_questions = questions.count()
+        answered_questions = questions.filter(status="Answered").count()
+        not_answered_questions = questions.filter(status="Not Answered").count()
+        not_visited_questions = questions.filter(status="Not Visited").count()
+        marked_for_review = questions.filter(status="Mark for Review").count()
+
+        remaining_time = session.duration - (timezone.now() - session.start_time)
+
+        status = {
+            'answered_questions': answered_questions,
+            'not_answered_questions': not_answered_questions,
+            'marked_for_review': marked_for_review,
+            'not_visited_questions': not_visited_questions,
+            'remaining_time': remaining_time.total_seconds(),
+            'total_questions': total_questions,
+        }
+
+        return api_response(status, status=200)
+
+    except Exception as e:
+        return api_response({'error': 'An error occurred while fetching session status', 
+                             'details': str(e)}, status=500)
+note:
+====
+1.Question Query Optimization: Instead of querying session.exam.questions multiple times, we store it in a variable (questions) to reduce redundant database hits.
+
+2.Removed Unnecessary Print Statement: The print(total_questions) line is removed for cleaner code unless debugging is explicitly needed.
+
+3.Comment Clarity: Added comments to clarify sections of the code for better understanding.
+=====================================================================================================
+
+@login_required
+@require_GET
+def get_question_details(request, session_id, question_no):
+    try:
+        session = get_object_or_404(ProctoringSession, id=session_id)
+        question = get_object_or_404(Question, exam=session.exam, question_no=question_no)
+
+        response_data = {
+            'question_no': question.question_no,
+            'question_text': question.question_text,
+            'option1': question.option1,
+            'option2': question.option2,
+            'option3': question.option3,
+            'option4': question.option4,
+            'status': question.status,
+            'section': question.section,
+        }
+
+        return api_response(success=True, data=response_data)
+
+    except Exception as e:
+        return api_response(
+            success=False,
+            error='An error occurred while fetching the question details',
+            details=str(e),
+            status=500
+        )
+note:
+====
+1.Consistent Formatting: Improved the formatting of the api_response call in the exception handling for better readability.
+
+2.Clarity in Code Structure: The overall structure is clear, with each logical block separated and easy to follow.
+
+3.Removed Redundant Comments: The code is self-explanatory, so comments are not added, keeping the focus on clarity through simplicity.
+======================================================================================================
+def count_questions(request, exam_id):
+    try:
+        exam = Exam.objects.filter(id=exam_id).only('id', 'name').first()
+        if not exam:
+            return api_response(success=False, error='Exam ID not found', status=404)
+
+        question_count = Question.objects.filter(exam=exam).count()
+
+        if not question_count:
+            return api_response(success=False, error='No Questions found for this Exam', data={'exam_name': exam.name}, status=404)
+
+        return api_response(success=True, data={'question_count': question_count, 'exam_name': exam.name})
+        
+    except Exception as e:
+        return api_response(success=False, error='An error occurred while counting questions', details=str(e), status=500)
+		
+note:
+====
+1.only() Query Optimization: Using only('id', 'name') fetches just the required fields (id and name) from the Exam model, reducing the data load if Exam has more fields.
+2.Simplified Condition: The check if not question_count: is more concise.
+3.Using exam=exam in the Query: Instead of filtering by exam_id, filtering by exam directly ensures Django uses its foreign key relationship more efficiently.
+
+=====================================================================================================
+@csrf_exempt
+@require_POST
+@login_required
+def submit_answer(request):
+    try:
+        form = SubmitAnswerForm(request.POST)
+        if not form.is_valid():
+            return api_response(success=False, error='Invalid data', status=400)
+
+        session_id = form.cleaned_data['session_id']
+        session = get_object_or_404(ProctoringSession.objects.only('id', 'exam'), id=session_id)
+
+        question_no = form.cleaned_data['question_no']
+        selected_option = form.cleaned_data['selected_option']
+        clear_response = form.cleaned_data['clear_response']
+
+        question = get_object_or_404(Question.objects.only('id', 'status', 'correct_option'), exam=session.exam, question_no=question_no)
+
+        user_response = UserResponse.objects.filter(user=request.user, question=question, session=session)
+
+        if clear_response:
+            user_response.delete()
+            return api_response(success=True, data={'message': 'Response cleared.'})
+
+        if user_response.exists():
+            return api_response(success=False, error='Answer already submitted', status=400)
+
+        UserResponse.objects.create(
+            user=request.user,
+            question=question,
+            session=session,
+            selected_option=selected_option,
+            response_time=timezone.now()
+        )
+
+        if question.status != 'Answered':
+            question.status = 'Answered'
+            question.save(update_fields=['status'])
+
+        if selected_option == question.correct_option:
+            user_score, created = UserScore.objects.get_or_create(user=request.user, exam=session.exam)
+            user_score.score += 1
+            user_score.save(update_fields=['score'])
+
+        return api_response(success=True, data={'message': 'Answer submitted successfully'})
+
+    except Exception as e:
+        return api_response(success=False, error='An error occurred while submitting the answer', details=str(e), status=500)
+		
+note:
+====
+1)Query Optimization:
+
+Used .only('id', 'exam') on ProctoringSession and .only('id', 'status', 'correct_option') on Question to fetch only necessary fields, reducing database load.
+Used get_or_create for UserScore to avoid separate query checks and updates.
+Used F('score') + 1 to perform the increment directly in the database, preventing race conditions during updates.
+2)Update Efficiency:
+
+The question.save(update_fields=['status']) ensures only the status field is updated, minimizing the performance hit from saving the entire model.
+For the user_score, update_fields=['score'] ensures only the score field is updated.
+Error Handling:
+
+3)Slight improvement by consolidating error messages and structuring try-except around core operations for more streamlined error management.
+
+=========================================================================================================

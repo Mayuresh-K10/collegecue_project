@@ -1,0 +1,82 @@
+models.py code ->
+
+class CollegeEnquiry(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed'),
+        ('resolved', 'Resolved'),
+    ]
+
+    college = models.ForeignKey(College, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField()
+    mobile_number = models.CharField(max_length=15)
+    course = models.CharField(max_length=128, default='N/A')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+views.py ->
+
+@csrf_exempt
+def submit_college_enquiry(request, college_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    required_fields = ['first_name', 'last_name', 'email', 'mobile_number', 'course','status']
+    if not all(data.get(field) for field in required_fields):
+        return JsonResponse({'error': 'All fields are required'}, status=400)
+
+    first_name, last_name, email, mobile_number, course, status= (
+        data['first_name'], data['last_name'], data['email'], data['mobile_number'], data['course'], data['status']
+    )
+
+    try:
+        college = College.objects.get(id=college_id)
+    except College.DoesNotExist:
+        return JsonResponse({'error': 'Invalid college ID'}, status=400)
+
+    if CollegeEnquiry.objects.filter(email=email, college=college).exists():
+        return JsonResponse({'error': 'An enquiry with this email has already been submitted for this college.'}, status=400)
+
+    try:
+        enquiry = CollegeEnquiry.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            mobile_number=mobile_number,
+            course=course,
+            status=status,
+            college=college
+        )
+        return JsonResponse({'message': 'Enquiry submitted successfully', 'enquiry_id': enquiry.id}, status=201)
+    except IntegrityError:
+        return JsonResponse({'error': 'Error while saving enquiry. Please try again.'}, status=400)
+
+
+urls.py ->
+    path('submit-college-enquiry/<int:college_id>/', views.submit_college_enquiry, name='submit-college-enquiry'),
+
+Postman Request ->
+
+URL - http://127.0.0.1:8000/submit-college-enquiry/1/
+
+Body - 
+
+{
+   "first_name":"Mayuresh",
+   "last_name":"kurane",
+   "email":"kuranemayuresh99@gmail.com",
+   "mobile_number":"7350188199",
+   "course": "B-Tech in CSE",
+   "status":"pending"
+}
+

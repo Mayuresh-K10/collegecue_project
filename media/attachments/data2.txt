@@ -1,0 +1,227 @@
+import job titles.py:
+=================
+import pandas as pd # type: ignore
+from django.core.management.base import BaseCommand
+from job_portal.models import Application, Job, Company
+
+class Command(BaseCommand):
+    help = 'Import data from multiple Excel files to the Job, Company, and Application models'
+
+    # def add_arguments(self, parser):
+    #     parser.add_argument('job_title', type=str, help='Path to the Excel file containing job titles')
+    #     parser.add_argument('job_type', type=str, help='Path to the Excel file containing job types')
+    #     parser.add_argument('exp_type', type=str, help='Path to the Excel file containing job experience')
+    #     parser.add_argument('category_type', type=str, help='Path to the Excel file containing job categories')
+    #     parser.add_argument('workplace_types', type=str, help='Path to the Excel file containing workplace types')
+    #     parser.add_argument('location_types', type=str, help='Path to the Excel file containing job locations')
+    #     parser.add_argument('sector_type', type=str, help='Path to the Excel file containing sector types')
+    #     parser.add_argument('country_type', type=str, help='Path to the Excel file containing country names')
+    #     parser.add_argument('application_status', type=str, help='Path to the Excel file containing application statuses')
+    
+    def add_arguments(self, parser):
+        file_fields = [
+            ('job_title', 'Path to the Excel file containing job titles'),
+            ('job_type', 'Path to the Excel file containing job types'),
+            ('exp_type', 'Path to the Excel file containing job experience'),
+            ('category_type', 'Path to the Excel file containing job categories'),
+            ('workplace_types', 'Path to the Excel file containing workplace types'),
+            ('location_types', 'Path to the Excel file containing job locations'),
+            ('sector_type', 'Path to the Excel file containing sector types'),
+            ('country_type', 'Path to the Excel file containing country names'),
+            ('application_status', 'Path to the Excel file containing application statuses')
+        ]
+        for arg, help_text in file_fields:
+            parser.add_argument(arg, type=str, help=help_text)
+
+    def handle(self, *args, **kwargs):
+        job_titles_path = kwargs['job_title']
+        job_types_path = kwargs['job_type']
+        experience_path = kwargs['exp_type']
+        categories_path = kwargs['category_type']
+        workplace_types_path = kwargs['workplace_types']
+        locations_path = kwargs['location_types']
+        sector_types_path = kwargs['sector_type']
+        country_names_path = kwargs['country_type']
+        statuses_path = kwargs['application_status']
+
+        try:
+            job_titles_df = pd.read_excel(job_titles_path)
+            job_types_df = pd.read_excel(job_types_path)
+            experience_df = pd.read_excel(experience_path)
+            categories_df = pd.read_excel(categories_path)
+            workplace_types_df = pd.read_excel(workplace_types_path)
+            locations_df = pd.read_excel(locations_path)
+            sector_types_df = pd.read_excel(sector_types_path)
+            country_names_df = pd.read_excel(country_names_path)
+            statuses_df = pd.read_excel(statuses_path)
+
+            max_rows = max(
+                len(job_titles_df),
+                len(job_types_df),
+                len(experience_df),
+                len(categories_df),
+                len(workplace_types_df),
+                len(locations_df),
+                len(sector_types_df),
+                len(country_names_df),
+                len(statuses_df)
+            )
+
+            for i in range(max_rows):
+                job_title = job_titles_df.iloc[i]['job_title'] if i < len(job_titles_df) else ''
+                job_type = job_types_df.iloc[i]['job_type'] if i < len(job_types_df) else ''
+                experience = experience_df.iloc[i]['experience'] if i < len(experience_df) else ''
+                category = categories_df.iloc[i]['category'] if i < len(categories_df) else ''
+                workplace_type = workplace_types_df.iloc[i]['workplaceTypes'] if i < len(workplace_types_df) else ''
+                location = locations_df.iloc[i]['location'] if i < len(locations_df) else ''
+                sector_type = sector_types_df.iloc[i]['sector_type'] if i < len(sector_types_df) else ''
+                country = country_names_df.iloc[i]['country_name'] if i < len(country_names_df) else ''
+                status = statuses_df.iloc[i]['status'] if i < len(statuses_df) else ''
+
+                if sector_type or country:
+                   company, _= Company.objects.get_or_create(
+                        sector_type=sector_type,
+                        country=country
+                    )
+
+                if job_title or job_type or experience or category or workplace_type or location:
+                    job, _= Job.objects.get_or_create(
+                        job_title=job_title,
+                        job_type=job_type,
+                        experience=experience,
+                        category=category,
+                        workplaceTypes=workplace_type,
+                        location=location,
+                        company=company
+                        
+                    )
+
+                if job and status:
+                    Application.objects.create(
+                        job=job,
+                        status=status,
+                    )
+
+                self.stdout.write(self.style.SUCCESS(f'Successfully imported row {i+1}'))
+
+        except FileNotFoundError as e:
+            self.stdout.write(self.style.ERROR(f'File not found: {e.filename}'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'An error occurred: {str(e)}'))
+note:
+====
+1.Looped Argument Addition: The add_arguments method uses a loop to add file arguments, reducing repetitive code.
+
+
+from ast import iter_fields
+from email import parser
+import pandas as pd  # type: ignore
+from django.core.management.base import BaseCommand
+from test_series.models import Exam, ProctoringEvent, ProctoringSession, Question
+
+
+class Command(BaseCommand):
+    help = 'Import event types and question data from Excel files to the ProctoringEvent and Question models'
+
+    # def add_arguments(self, parser):
+    #     parser.add_argument('--event_type', type=str, help='Path to the Excel file containing event types')
+    #     parser.add_argument('--question_status', type=str, help='Path to the Excel file containing question statuses')
+    #     parser.add_argument('--question_section_type', type=str, help='Path to the Excel file containing question section types')
+    #     # parser.add_argument('--session_status_type', type=str, help='Path to the Excel file containing session statuses')
+    #     parser.add_argument('--session_id', type=int, required=True, help='Session ID to associate with ProctoringEvent')
+    #     parser.add_argument('--exam_id', type=int, required=True, help='Exam ID to associate with Questions')
+    #     # parser.add_argument('--user_id', type=int, required=True, help='User ID to associate with ProctoringSession')
+
+    def add_arguments(self, parser):
+        file_fields = [
+        ('--event_type', 'Path to the Excel file containing event types'),
+        ('--question_status', 'Path to the Excel file containing question statuses'),
+        ('--question_section_type', 'Path to the Excel file containing question section types'),
+        # ('--session_status_type', 'Path to the Excel file containing session statuses'),
+        ('--session_id', 'Session ID to associate with ProctoringEvent'),
+        ('--exam_id', 'Exam ID to associate with Questions'),
+        # ('--user_id', 'User ID to associate with ProctoringSession')
+    ]
+        for arg, help_text in file_fields:
+            parser.add_argument(arg, type=str, help=help_text)
+
+    def handle(self, *args, **kwargs):
+        event_type_path = kwargs['event_type']
+        question_status_path = kwargs['question_status']
+        question_section_type_path = kwargs['question_section_type']
+        # session_status_type_path = kwargs['session_status_type']
+        session_id = kwargs['session_id']
+        exam_id = kwargs['exam_id']
+        # user_id = kwargs['user_id']
+
+        try:
+            session = ProctoringSession.objects.get(id=session_id)
+        except ProctoringSession.DoesNotExist:
+            self.stdout.write(self.style.ERROR(f'No session found with ID {session_id}'))
+            return
+
+        # try:
+        #     user = User.objects.get(id=user_id)
+        # except User.DoesNotExist:
+        #     self.stdout.write(self.style.ERROR(f'No user found with ID {user_id}'))
+        #     return
+
+        try:
+            exam = Exam.objects.get(id=exam_id)
+        except Exam.DoesNotExist:
+            self.stdout.write(self.style.ERROR(f'No exam found with ID {exam_id}'))
+            return
+
+        try:
+            event_type_df = pd.read_excel(event_type_path)
+            question_status_df = pd.read_excel(question_status_path)
+            question_section_df = pd.read_excel(question_section_type_path)
+            # session_status_df = pd.read_excel(session_status_type_path)
+
+            max_rows = max(
+               len(event_type_df),
+               len(question_status_df),
+               len(question_section_df),
+            #    len(session_status_df),
+            )
+
+            next_question_no = Question.objects.filter(exam=exam).count() + 1
+
+            for i in range(max_rows):
+                event_type = event_type_df.iloc[i]['event_type'] if i < len(event_type_df) else None
+                question_status = question_status_df.iloc[i]['status'] if i < len(question_status_df) else None
+                question_section_type = question_section_df.iloc[i]['section'] if i < len(question_section_df) else None
+                # session_status_type = session_status_df.iloc[i]['session_status'] if i < len(session_status_df) else None
+
+                if event_type:
+                    ProctoringEvent.objects.get_or_create(
+                        event_type=event_type,
+                        session=session,
+                    )
+
+                if question_status or question_section_type:
+                    Question.objects.create(
+                        exam=exam,
+                        question_no=next_question_no,
+                        section=question_section_type if question_section_type else '',
+                        status=question_status if question_status else ''
+                    )
+                    next_question_no += 1
+
+                # if session_status_type:
+                #     ProctoringSession.objects.create(
+                #       status=session_status_type,
+                #       user=user,
+                #       exam=exam
+                #     )
+
+            self.stdout.write(self.style.SUCCESS('Data import and update completed successfully.'))
+
+        except FileNotFoundError as e:
+            self.stdout.write(self.style.ERROR(f'File not found: {e.filename}'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error reading Excel file: {str(e)}'))
+
+note:
+====
+1.Looped Argument Addition: The add_arguments method uses a loop to add file arguments, reducing repetitive code.

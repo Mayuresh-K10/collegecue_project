@@ -1,0 +1,100 @@
+## views.py code ->
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginCompanyInChargeView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            email = data.get('official_email')
+            password = data.get('password')
+
+            try:
+                company = CompanyInCharge.objects.get(official_email=email)
+            except CompanyInCharge.DoesNotExist:
+                return JsonResponse({'error': 'Company not found'}, status=404)
+
+            if check_password(password, company.password):
+                token, _ = Token.objects.get_or_create(user=company.user)
+                return JsonResponse({'success': True, 'token': token.key}, status=200)
+            else:
+                return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginUniversityInChargeView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            email = data.get('official_email')
+            password = data.get('password')
+
+            try:
+                university = UniversityInCharge.objects.get(official_email=email)
+            except UniversityInCharge.DoesNotExist:
+                return JsonResponse({'error': 'University not found'}, status=404)
+
+            if check_password(password, university.password):
+                token, _ = Token.objects.get_or_create(user=university.user)
+                return JsonResponse({'success': True, 'token': token.key}, status=200)
+            else:
+                return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginConsultantView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            email = data.get('official_email')
+            password = data.get('password')
+
+            try:
+                consultant = Consultant.objects.get(official_email=email)
+            except Consultant.DoesNotExist:
+                return JsonResponse({'error': 'Consultant not found'}, status=404)
+
+            if check_password(password, consultant.password):
+                token, _ = Token.objects.get_or_create(user=consultant.user)
+                return JsonResponse({'success': True, 'token': token.key}, status=200)
+            else:
+                return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500) 
+
+## models.py code 
+
+Add this same line in a CompanyInCharge, UniversityInCharge and Consultant model ->  user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+
+## forms.py code 
+
+class CompanyInChargeForm(forms.ModelForm):
+    class Meta:
+        model = CompanyInCharge
+        fields = ['company_name','official_email','country_code','mobile_number','password','linkedin_profile','company_person_name','agreed_to_terms']
+
+class UniversityInChargeForm(forms.ModelForm):
+    class Meta:
+        model = UniversityInCharge
+        fields = ['university_name','official_email','country_code','mobile_number','password','linkedin_profile','college_person_name','agreed_to_terms']
+
+
+class ConsultantForm(forms.ModelForm):
+    class Meta:
+        model = Consultant
+        fields = ['consultant_name','official_email','country_code','mobile_number','password','linkedin_profile','consultant_person_name','agreed_to_terms']
+
+
+     
+        
+

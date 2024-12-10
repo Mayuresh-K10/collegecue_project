@@ -1,0 +1,44 @@
+from django.core.mail import send_mail
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+from .models import User, Message, Attachment
+import json
+
+@csrf_exempt
+def sendMessage(request):
+    if request.method == "POST":
+        try:
+            sender_email = request.POST.get('sender_email')
+            recipient_email = request.POST.get('recipient_email')
+            message_content = request.POST.get('content')
+
+            if not sender_email or not recipient_email or not message_content:
+                return JsonResponse({'status': 'false', 'message': 'Required fields missing'}, status=400)
+
+            sender = get_object_or_404(User, email=sender_email)
+            recipient = get_object_or_404(User, email=recipient_email)
+
+            message = Message.objects.create(sender=sender, recipient=recipient, content=message_content)
+
+            
+            if request.FILES:
+                for file in request.FILES.getlist('attachments'):
+                    Attachment.objects.create(message=message, file=file)
+
+           
+            email_subject = 'New Message from {}'.format(sender.email)
+            email_body = 'You have received a new message from {}.\n\nContent: {}\n\nYou can view the message in your inbox.'.format(sender.email, message_content)
+            send_mail(
+                email_subject,
+                email_body,
+                settings.EMAIL_HOST_USER,
+                [recipient.email],
+                fail_silently=False,
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Message sent successfully!'}, status=201)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

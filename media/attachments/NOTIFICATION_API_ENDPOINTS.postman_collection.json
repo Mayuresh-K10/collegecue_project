@@ -1,0 +1,392 @@
+{
+	"info": {
+		"_postman_id": "f6f65ba2-530a-4a96-9728-fc644f71c916",
+		"name": "NOTIFICATION API ENDPOINTS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31248398",
+		"_collection_link": "https://interstellar-moon-607402.postman.co/workspace/Team-Workspace~05e5082b-ca50-4d15-8e61-b419f91b8a3d/collection/31248398-f6f65ba2-530a-4a96-9728-fc644f71c916?action=share&source=collection_link&creator=31248398"
+	},
+	"item": [
+		{
+			"name": "STUDENT CREATE NOTIFICATION",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer T23sQCJZhSQRVi8vG08h566QszcAcEku3Txc7Nmo",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"Regardihg about leave1\",\r\n  \"message\": \"Could you please provide leave due to health issues.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/Student-notifications/create/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"Student-notifications",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "STUDENT MARK AS READ",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer T23sQCJZhSQRVi8vG08h566QszcAcEku3Txc7Nmo",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://127.0.0.1:8000/Student-notifications/read/2/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"Student-notifications",
+						"read",
+						"2",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "STUDENT GET NOTIFICATIONS",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer T23sQCJZhSQRVi8vG08h566QszcAcEku3Txc7Nmo",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"New Notification\",\r\n  \"message\": \"This is a test notification.\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/Student-notifications/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"Student-notifications",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JOBSEEKER  CREATE NOTIFICATION",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer QLKiJLlX5HU0MMeG4bvVlTJhvd3ziusBzFuF4IJk",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"Regardihg about leave\",\r\n  \"message\": \"Could you please provide leave due to health issues.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/jobseeker-notifications/create/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"jobseeker-notifications",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JOBSEEKER MARK AS READ",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer QLKiJLlX5HU0MMeG4bvVlTJhvd3ziusBzFuF4IJk",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/jobseeker-notifications/read/1/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"jobseeker-notifications",
+						"read",
+						"1",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JOBSEEKER GET NOTIFICATIONS",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer QLKiJLlX5HU0MMeG4bvVlTJhvd3ziusBzFuF4IJk",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/jobseeker-notifications/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"jobseeker-notifications",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "COLLEGE CREATE NOTIFICATION",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer mBVX6Bx2vuKx7UzTvxNvhuSnIscUXiMvPXSgSf2u",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"Regardihg about leave\",\r\n  \"message\": \"Could you please provide leave due to health issues.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/College-notifications/create/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"College-notifications",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "COLLEGE MARK AS READ",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer mBVX6Bx2vuKx7UzTvxNvhuSnIscUXiMvPXSgSf2u",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/College-notifications/read/1/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"College-notifications",
+						"read",
+						"1",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "COLLEGE GET NOTIFICATIONS",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer mBVX6Bx2vuKx7UzTvxNvhuSnIscUXiMvPXSgSf2u",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/College-notifications/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"College-notifications",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "COMAPNY CREATE NOTIFICATION",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer P2LVuzhpdU7lEexnHKG7b8ow6vlqEQmkQzzLihfO",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"Regardihg about leave\",\r\n  \"message\": \"Could you please provide leave due to health issues.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/Company-notifications/create/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"Company-notifications",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "COMPANY MARK AS READ",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer P2LVuzhpdU7lEexnHKG7b8ow6vlqEQmkQzzLihfO",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/Company-notifications/read/1/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"Company-notifications",
+						"read",
+						"1",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "COMPANY GET NOTIFICATIONS",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer P2LVuzhpdU7lEexnHKG7b8ow6vlqEQmkQzzLihfO",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/Company-notifications/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"Company-notifications",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

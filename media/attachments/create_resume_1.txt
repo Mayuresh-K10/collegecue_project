@@ -1,0 +1,124 @@
+@csrf_exempt
+def create_resume(request):
+    if request.method == 'POST':
+        try:
+            user_email = request.POST.get('email')
+            print("User Email:", user_email) 
+            if not user_email:
+                return JsonResponse({'status': 'error', 'message': 'Email is required'}, status=400)
+            
+            resume = Resume.objects.filter(email=user_email).first()
+            print("Resume Object:", resume)  
+
+            if resume:
+                resume_form = ResumeForm(request.POST, request.FILES, instance=resume)
+            else:
+                resume_form = ResumeForm(request.POST, request.FILES)
+            
+            print("Resume Form Validity:", resume_form.is_valid())  
+            if resume_form.is_valid():
+                resume = resume_form.save()
+
+                delete_attachment = request.POST.get('delete', 'false').lower() == 'true'
+                print("Delete Attachment:", delete_attachment)
+
+                if delete_attachment:
+                    if resume.Attachment: 
+                        print("Attachment Path:", resume.Attachment.path) 
+                        if os.path.exists(resume.Attachment.path): 
+                            os.remove(resume.Attachment.path)
+                        resume.Attachment = None
+                        resume.save()
+                        return JsonResponse({'status': 'success', 'message': 'Attachment deleted successfully', 'resume_id': resume.id})
+                    else:
+                        return JsonResponse({'status': 'error', 'message': 'No attachment to delete'}, status=400)
+
+                objective_data = request.POST.get('objective', {})
+                if objective_data:
+                    objective_form = ObjectiveForm(json.loads(objective_data))
+                    if objective_form.is_valid():
+                        objective = objective_form.save(commit=False)
+                        objective.resume = resume
+                        objective.save()
+
+                education_data = json.loads(request.POST.get('education', '[]'))
+                for item in education_data:
+                    education_form = EducationForm(item)
+                    if education_form.is_valid():
+                        education = education_form.save(commit=False)
+                        education.resume = resume
+                        education.save()
+
+                experience_data = json.loads(request.POST.get('experience', '[]'))
+                for item in experience_data:
+                    experience_form = ExperienceForm(item)
+                    if experience_form.is_valid():
+                        experience = experience_form.save(commit=False)
+                        experience.resume = resume
+                        experience.save()
+
+                project_data = json.loads(request.POST.get('projects', '[]'))
+                for item in project_data:
+                    project_form = ProjectForm(item)
+                    if project_form.is_valid():
+                        project = project_form.save(commit=False)
+                        project.resume = resume
+                        project.save()
+
+                reference_data = json.loads(request.POST.get('references', '[]'))
+                for item in reference_data:
+                    reference_form = ReferenceForm(item)
+                    if reference_form.is_valid():
+                        reference = reference_form.save(commit=False)
+                        reference.resume = resume
+                        reference.save()
+
+                certifications_data = json.loads(request.POST.get('certifications', '[]'))
+                for item in certifications_data:
+                    certifications_form = CertificationForm(item)
+                    if certifications_form.is_valid():
+                        certifications = certifications_form.save(commit=False)
+                        certifications.resume = resume
+                        certifications.save()
+
+                achievements_data = json.loads(request.POST.get('achievements', '[]'))
+                for item in achievements_data:
+                    achievements_form = AchievementForm(item)
+                    if achievements_form.is_valid():
+                        achievements = achievements_form.save(commit=False)
+                        achievements.resume = resume
+                        achievements.save()
+
+                publications_data = json.loads(request.POST.get('publications', '[]'))
+                for item in publications_data:
+                    publications_form = PublicationForm(item)
+                    if publications_form.is_valid():
+                        publications = publications_form.save(commit=False)
+                        publications.resume = resume
+                        publications.save()
+
+                return JsonResponse({'status': 'success', 'message': 'Resume created successfully', 'resume_id': resume.id})
+
+            print("Form Errors:", resume_form.errors) 
+            return JsonResponse({'status': 'error', 'errors': resume_form.errors})
+
+        except json.JSONDecodeError as e:
+            print("JSONDecodeError:", str(e))  
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+
+        except IntegrityError as e:
+            print("IntegrityError:", str(e))  
+            return JsonResponse({'status': 'error', 'message': 'Database integrity error'}, status=500)
+
+        except OperationalError as e:
+            print("OperationalError:", str(e)) 
+            return JsonResponse({'status': 'error', 'message': 'Database operational error'}, status=500)
+
+        except Exception as e:
+            print("General Exception:", str(e)) 
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+    ....

@@ -1,0 +1,52 @@
+ 
+ 
+ ``    \
+ b 
+@csrf_exempt
+def choose_plan(request):
+    try:
+        if request.method == 'POST':
+            # print(f"POST Data: {request.POST}")
+            form = ChoosePlanForm(request.POST)
+            if form.is_valid():
+                plan_name = form.cleaned_data['plan_id']
+                plan = MembershipPlan.objects.get(name=plan_name)
+                # print(f"Plan ID: {plan}")
+
+                user_subscription, created = UserSubscription.objects.get_or_create(user=request.user)
+                user_subscription.current_plan = plan
+                user_subscription.subscription_date = timezone.now()
+                user_subscription.renewal_date = timezone.now() + timezone.timedelta(days=30)
+                user_subscription.save()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Successfully subscribed to the {plan.name} plan.',
+                    'plan': {
+                        'name': plan.name,
+                        'price': plan.price,
+                        'job_postings': plan.job_postings,
+                        'featured_jobs': plan.featured_jobs,
+                        'post_duration': plan.post_duration
+                    }
+                })
+            else:
+                # print(f"Form errors: {form.errors}")
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+
+    except MembershipPlan.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Plan not found.'}, status=404)
+    except Exception as e:
+        # print(f"Exception: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+		
+		
+path('choose-plan/', views.choose_plan, name='choose_plan'),
+
+
+http://127.0.0.1:8000/choose-plan/
+
+{
+    "plan_id": "Standard"
+}
