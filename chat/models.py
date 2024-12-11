@@ -6,8 +6,8 @@ from django.utils.timezone import now
 class Message(models.Model):
     sender_email = models.EmailField()
     recipient_email = models.EmailField()
-    sender_model = models.CharField(max_length=50) 
-    recipient_model = models.CharField(max_length=50)  
+    sender_model = models.CharField(max_length=50)
+    recipient_model = models.CharField(max_length=50)
     subject = models.CharField(max_length=255, blank=True, null=True)
     content = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -320,7 +320,7 @@ class Forgot2_view(View):
 
             if password != confirm_password:
                 return JsonResponse({'error': 'Passwords did not match'}, status=400)
-            
+
             stored_email = request.session.get('email')
             user = new_user.objects.filter(email=stored_email, token=token).first()
 
@@ -922,9 +922,9 @@ def login_job_seeker(request):
             job_seeker.token = generate_unique_token()
             job_seeker.save()
 
-            return JsonResponse({'message': 'Login successful', 
-                                 'unique_token': job_seeker.token, 
-                                 'userid':job_seeker.id, 
+            return JsonResponse({'message': 'Login successful',
+                                 'unique_token': job_seeker.token,
+                                 'userid':job_seeker.id,
                                  'useremail':job_seeker.email,
                                  'first_name':job_seeker.first_name,
                                  'last_number':job_seeker.last_name,

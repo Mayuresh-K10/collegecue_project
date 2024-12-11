@@ -5,7 +5,6 @@ from django.db.models import Q
 from login.models import JobSeeker, new_user, CompanyInCharge, UniversityInCharge
 from .models import Message, MessageAttachment
 from rest_framework.permissions import AllowAny
-from rest_framework.decorators import permission_classes
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Max
 
@@ -87,7 +86,7 @@ def send_chat(request):
                     original_name=uploaded_file.name,
                     file_type=uploaded_file.content_type
                 )
-                message.attachments.add(attachment)  
+                message.attachments.add(attachment)
 
         return Response({
             "message": "Message sent successfully",
@@ -162,7 +161,7 @@ def get_messages(request):
 
         messages_data = []
         for message in messages:
-            attachments = message.attachments.all()  
+            attachments = message.attachments.all()
             attachments_data = [
                 {
                     "original_name": attachment.original_name,

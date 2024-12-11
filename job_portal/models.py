@@ -656,7 +656,7 @@ class CollegeAdvertisement(models.Model):
 #
 #    def __str__(self):
 #        return self.job_title
-#    
+#
 #    def save(self, *args, **kwargs):
 #     if not self.unique_job_id_as_int:
 #          self.unique_job_id_as_int = int(str(self.unique_job_id.int)[-16:])
@@ -874,11 +874,11 @@ class CollegeAdvertisement(models.Model):
 #    def __str__(self):
 #        sender_email = (
 #            self.company_in_charge.official_email if self.company_in_charge else
-#            (self.receiptent_new_user.email if self.receiptent_new_user else 
+#            (self.receiptent_new_user.email if self.receiptent_new_user else
 #            (self.receiptent_job_seeker.email if self.receiptent_job_seeker else "Unknown Sender"))
 #        )
 #        recipient_email = (
-#            self.receiptent_new_user.email if self.receiptent_new_user else 
+#            self.receiptent_new_user.email if self.receiptent_new_user else
 #            (self.receiptent_job_seeker.email if self.receiptent_job_seeker else "Unknown Recipient")
 #        )
 #        return f"{sender_email} -> {recipient_email}"
@@ -942,7 +942,7 @@ class CollegeAdvertisement(models.Model):
 #    answer_text = models.TextField()
 #
 #    def __str__(self):
-#        return f"Answer for {self.question.question_text[:50]}"    
+#        return f"Answer for {self.question.question_text[:50]}"
 #
 ## class MembershipPlan(models.Model):
 ##     PLAN_CHOICES = [
@@ -1228,7 +1228,7 @@ class CollegeAdvertisement(models.Model):
 #        return f"{self.job_title} at {self.company_name}"
 #
 #class JobSeeker_Project(models.Model):
-#    job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE) 
+#    job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE)
 #    resume = models.ForeignKey(JobSeeker_Resume, related_name='projects', on_delete=models.CASCADE)
 #    title = models.CharField(max_length=100, default='Untitled Project')
 #    description = models.TextField(default='No description')
@@ -1322,6 +1322,6 @@ class CollegeAdvertisement(models.Model):
 #    target_audience = models.CharField(max_length=100)
 #
 #    def __str__(self):
-#        return self.name     
+#        return self.name
 #
 #
