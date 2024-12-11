@@ -1,7 +1,5 @@
 from django.contrib.auth import get_user_model # type: ignore
 from django.http import JsonResponse # type: ignore
-# import requests # type: ignore
-# import json
 from googleapiclient.discovery import build # type: ignore
 from google.oauth2.service_account import Credentials # type: ignore
 from datetime import datetime

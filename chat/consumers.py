@@ -1,8 +1,5 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Message, MessageAttachment
-from django.core.files.base import ContentFile
-import base64
 import re
 
 class ChatConsumer(AsyncWebsocketConsumer):

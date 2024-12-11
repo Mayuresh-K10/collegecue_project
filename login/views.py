@@ -5,7 +5,7 @@ from django.middleware.csrf import get_token # type: ignore
 from django.views.decorators.csrf import csrf_exempt, csrf_protect # type: ignore
 from .utils import (send_data_to_google_sheet3,send_data_to_google_sheet4,
 send_data_to_google_sheet2,send_data_to_google_sheets)
-import secrets,json,requests, os # type: ignore
+import secrets,json,requests # type: ignore
 from .models import CompanyInCharge, Consultant, JobSeeker, UniversityInCharge, new_user
 from django.contrib.auth.hashers import make_password, check_password # type: ignore
 from django.utils.decorators import method_decorator # type: ignore
@@ -14,17 +14,12 @@ from .forms import (JobSeekerRegistrationForm, UniversityInChargeForm,CompanyInC
 SubscriptionForm1,ConsultantForm,Forgot2Form
 ,VerifyForm,SubscriptionForm)
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger # type: ignore
-# from django.utils.html import format_html
 from django.core.mail import EmailMessage
-# from django.template.loader import render_to_string
-from google.oauth2 import id_token # type: ignore
 from django.utils.crypto import get_random_string
 
 
 #CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-
 #CLIENT_ID = os.getenv('LINKEDIN_CLIENT_ID')
-
 
 def generate_unique_token():
     return get_random_string(40)
@@ -229,10 +224,10 @@ class Verify_view(View):
 
             stored_email = request.session.get('email')
             user = new_user.objects.filter(email=stored_email, token=token).first()
-            
+
             if not user:
                 return JsonResponse({'error': 'Invalid token or user not found'}, status=404)
-            
+
             if form.is_valid():
                 verify = form.save()
                 otp_entered = verify.otp
@@ -379,7 +374,7 @@ class DeleteUserAccountView(View):
         try:
             auth_header = request.headers.get('Authorization', '')
             token = auth_header.split(' ')[1] if auth_header.startswith('Bearer ') else None
-            
+
             data = json.loads(request.body.decode('utf-8'))
             confirmation = data.get('confirmation', False)
 
@@ -400,8 +395,6 @@ class DeleteUserAccountView(View):
             return JsonResponse({'error': 'Invalid JSON or token'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterCompanyInChargeView(View):
@@ -430,7 +423,6 @@ class RegisterCompanyInChargeView(View):
             sender_email = settings.EMAIL_HOST_USER
             recipient_email = [company.official_email]
             subject = 'Confirmation Mail'
-            # message = render_to_string('email_template.html', {'name': company.company_name})
             message = '''Dear User,
 
             Thank you for your registration.
@@ -442,7 +434,6 @@ class RegisterCompanyInChargeView(View):
             Support Team
             '''
             email = EmailMessage(subject, message, sender_email, recipient_email)
-            # email.content_subtype = "html"  # Main content is now text/html
             email.send()
             return JsonResponse({'success': True, 'message': 'Registration successful'})
         else:
@@ -476,7 +467,6 @@ class RegisterUniversityInChargeView(View):
             sender_email = settings.EMAIL_HOST_USER
             recipient_email = [university.official_email]
             subject = 'Confirmation Mail'
-            # message = render_to_string('email_template.html', {'name': university.university_name})
             message = '''Dear User,
 
             Thank you for your registration.
@@ -488,7 +478,6 @@ class RegisterUniversityInChargeView(View):
             Support Team
             '''
             email = EmailMessage(subject, message, sender_email, recipient_email)
-            # email.content_subtype = "html"
             email.send()
             return JsonResponse({'success': True, 'message': 'Registration successful'})
         else:
@@ -522,7 +511,6 @@ class RegisterConsultantView(View):
             sender_email = settings.EMAIL_HOST_USER
             recipient_email = [consultant.official_email]
             subject = 'Confirmation Mail'
-            # message = render_to_string('email_template.html', {'name': consultant.consultant_name})
             message = '''Dear User,
 
             Thank you for your registration.
@@ -534,7 +522,6 @@ class RegisterConsultantView(View):
             Support Team
             '''
             email = EmailMessage(subject, message, sender_email, recipient_email)
-            # email.content_subtype = "html"
             email.send()
             return JsonResponse({'success': True, 'message': 'Registration successful'})
         else:
@@ -702,7 +689,7 @@ class LoginCompanyInChargeView(View):
                     'phone':company.mobile_number,
                     'company_name':company.company_name,
                     'model':'CompanyInCharge'
-                    
+
                 }, status=200)
 
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
@@ -1097,7 +1084,7 @@ class ChangePasswordConsultantView(View):
             auth_header = request.headers.get('Authorization')
             if not auth_header or not auth_header.startswith('Bearer '):
                 return JsonResponse({'error': 'Token is missing or invalid format'}, status=400)
-            
+
             token = auth_header.split(' ')[1]
 
             data = json.loads(request.body.decode('utf-8'))
@@ -1107,7 +1094,7 @@ class ChangePasswordConsultantView(View):
                 return JsonResponse({'error': 'New password and confirmation are required'}, status=400)
             if new_password != confirm_password:
                 return JsonResponse({'error': 'Passwords do not match'}, status=400)
-            
+
             consultant = Consultant.objects.filter(token=token).first()
             if not consultant:
                 return JsonResponse({'error': 'Invalid token'}, status=404)
@@ -1115,7 +1102,7 @@ class ChangePasswordConsultantView(View):
             consultant.password = make_password(new_password)
             consultant.save()
             return JsonResponse({'success': True, 'message': 'Password changed successfully'}, status=200)
-        
+
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except Exception as e:
@@ -1219,5 +1206,3 @@ class DeleteConsultantAccountView(View):
             return JsonResponse({'error': 'Invalid JSON or token'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-
-#K

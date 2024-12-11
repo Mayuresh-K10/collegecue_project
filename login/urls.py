@@ -40,4 +40,3 @@ urlpatterns = [
     path('consultant/delete-account/', views.DeleteConsultantAccountView.as_view(), name='consultant-delete-account'),
 ]
 
-#K

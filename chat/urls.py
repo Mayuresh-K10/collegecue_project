@@ -4,7 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    # URL for searching users
     path('api/search/', views.search_user, name='search_user'),
     path('api/send_message/', views.send_chat, name='send_message'),
     path('api/get_messages/', views.get_messages, name='get_messages'),

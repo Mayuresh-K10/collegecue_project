@@ -3,7 +3,6 @@ from django.utils import timezone
 from login.models import CompanyInCharge, UniversityInCharge, new_user,JobSeeker
 
 class Exam(models.Model):
-    #user = models.ForeignKey(new_user, on_delete=models.CASCADE,null=True, blank=True)
     name = models.CharField(max_length=200)
     date = models.DateTimeField()
 
@@ -103,6 +102,3 @@ class Notification3(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.title}"
-
-
-#k

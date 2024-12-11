@@ -1,5 +1,5 @@
 from django import forms # type: ignore
-from .models import JobSeeker, Subscriber1,new_user,Consultant,Forgot2,UniversityInCharge,Subscriber,Verify,Forgot,CompanyInCharge
+from .models import JobSeeker, Subscriber1,Consultant,Forgot2,UniversityInCharge,Subscriber,Verify,Forgot,CompanyInCharge
 
 class CompanyInChargeForm(forms.ModelForm):
     class Meta:

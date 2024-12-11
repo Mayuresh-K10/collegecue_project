@@ -291,8 +291,6 @@ class CollegeScreeningAnswer(models.Model):
     def __str__(self):
         return f"Answer for {self.question.question_text[:50]}"
 
-
-
 class Job1(models.Model):
     university_in_charge = models.ForeignKey(UniversityInCharge, on_delete=models.CASCADE)
     college = models.ForeignKey('College', on_delete=models.CASCADE)
@@ -1272,7 +1270,7 @@ class CollegeAdvertisement(models.Model):
 #    publisher = models.CharField(max_length=100, default='Unknown')
 #    start_date = models.DateField(null=True, blank=True)
 #    end_date = models.DateField(null=True, blank=True)
-#    
+#
 #class Membership(models.Model):
 #    company_in_charge = models.ForeignKey(CompanyInCharge, on_delete=models.CASCADE, null=True, blank=True)
 #    name = models.CharField(max_length=100)
@@ -1325,5 +1323,5 @@ class CollegeAdvertisement(models.Model):
 #
 #    def __str__(self):
 #        return self.name     
-#    
+#
 #

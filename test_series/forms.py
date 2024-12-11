@@ -26,7 +26,6 @@ class MarkForReviewForm(forms.Form):
     question_no = forms.IntegerField()
     mark = forms.BooleanField()
 
-
 class SubmitAllAnswersForm(forms.Form):
     session_id = forms.IntegerField()
     answers = forms.JSONField()
@@ -35,7 +34,6 @@ class ExamParticipantForm(forms.ModelForm):
     class Meta:
         model = ExamParticipant
         fields = ['name', 'email', 'phone_number']
-
 
 class MarkAsReadForm(forms.ModelForm):
     class Meta:
@@ -77,7 +75,5 @@ class NotificationForm3(forms.ModelForm):
         model = Notification3
         fields = ['user', 'title', 'message']
 
-
-#k
 
 

@@ -1,6 +1,5 @@
 from django import forms # type: ignore
 from .models import Achievements, Advertisement, Application, Application1, Certification, College, CollegeAdvertisement, CollegeMembership, Education, JobSeeker_Achievements, JobSeeker_Certification, JobSeeker_Education, JobSeeker_Experience, JobSeeker_Objective, JobSeeker_Project, JobSeeker_Publications, JobSeeker_Reference, JobSeeker_Resume,Experience, Job, Company, Job1, Membership, Objective, Project, Publications, Reference, Resume, Student, Visitor
-from django.utils import timezone
 
 class JobForm(forms.ModelForm):
     class Meta:
@@ -14,11 +13,11 @@ class JobForm(forms.ModelForm):
         }
 
 class ApplicationForm(forms.ModelForm):
-    
+
     resume = forms.FileField(required=False)
     cover_letter = forms.CharField(required=False)
     skills = forms.CharField(required=False)
-   
+
     class Meta:
         model = Application
         fields = ['first_name', 'last_name', 'email', 'phone_number', 'resume', 'cover_letter', 'skills']
@@ -202,8 +201,7 @@ class JobseekerPublicationForm(forms.ModelForm):
     class Meta:
         model = JobSeeker_Publications
         fields = ['title', 'publisher', 'start_date','end_date']
-  
-        
+
 class MembershipForm(forms.ModelForm):
     class Meta:
         model = Membership
@@ -240,5 +238,5 @@ class AdvertisementForm(forms.ModelForm):
 class AdvertisementForm1(forms.ModelForm):
     class Meta:
         model = CollegeAdvertisement
-        fields = ['name', 'email', 'contact', 'advertisement_placement', 'time_duration', 'investment_cost', 'target_audience']        
+        fields = ['name', 'email', 'contact', 'advertisement_placement', 'time_duration', 'investment_cost', 'target_audience']
 

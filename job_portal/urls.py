@@ -5,7 +5,7 @@ from .views import  CollegeListCreateView,  CompanyListCreateView, CompanyDetail
 urlpatterns = [
     path('home', views.home, name='home'),
     path('get-csrf-token/', views.get_csrf_token, name='get_csrf_token'),
-    
+
     ## Company Dashboard
     path('company-status-counts/<int:company_in_charge_id>/', views.company_status_counts, name='company_status'),
     path('companies/<int:company_in_charge_id>/', CompanyListCreateView.as_view(), name='company_list_create'),
@@ -22,7 +22,7 @@ urlpatterns = [
     path('fetch-applicants/<int:company_in_charge_id>/', views.fetch_company_applicants_count, name='fetch_applicants'),
     path('company-membership/<int:company_in_charge_id>/', views.membership_form_view, name='membership_form'),
     path('company-advertisement/<int:company_in_charge_id>/', views.advertisement_form_view, name='advertisement_form'),
-    
+
     ## College Dashboard
     path('college_status_counts/<int:university_in_charge_id>/', views.college_status_counts, name='submit-enquiry'),
     path('fetch-college-jobs/<int:college_id>/<int:university_in_charge_id>/', views.college_jobs_api, name='fetch-college-jobs'),
@@ -62,7 +62,7 @@ urlpatterns = [
     path('resume/<int:user_id>/', views.get_user_resume_detail_by_id, name='get_resume_detail_by_id'),
     # new_user to college and company
     path('fetch-user-skills-jobs/<int:user_id>/', views.fetch_jobs_by_new_user_skills, name='fetch-skills'),
-    
+
     ## extra functionalities
     path('jobs/', views.job_list, name='job_list'),
     path('jobs-showcase/', views.job_list_showcase, name='job_list'),
@@ -98,8 +98,7 @@ urlpatterns = [
     path('company-job-applications/<int:company_in_charge_id>/<int:job_id>/', views.fetch_company_job_applications, name='fetch_job_applications'),
     path('college-job-applications/<int:university_in_charge_id>/<int:job_id>/', views.fetch_college_job_applications, name='fetch_job_applications'),
     path('fetch-college-applicants/<int:university_in_charge_id>/', views.fetch_college_applicants_count, name='fetch_applicants_counts'),
-   
-   
+
     #path('jobs/', views.job_list, name='job_list'),
     #path('jobs/<int:job_id>/', views.job_detail, name='job_detail'),
     #path('applications/<int:job_id>/', views.job_applications, name='job_applications'),
@@ -131,17 +130,10 @@ urlpatterns = [
     # path('cancel-plan/', views.cancel_plan, name='cancel_plan'),
     # path('subscription/', views.subscription_detail, name='subscription_detail'),
 
-    
-
-    
     path('user-apply-job/<int:job_id>/<int:user_id>/', views.user_apply_for_job, name='user-apply-job'), 
     path('job-application-summary/<int:company_in_charge_id>/', views.get_job_application_summary, name='job_application_summary'),
     path('get-application-details/<int:company_in_charge_id>/', views.get_application_details, name='get_application_details'),
     path('update-company-application-status/<int:company_in_charge_id>/<int:application_id>/', views.update_company_application_status, name='update_company_application_status'),
     path('update-college-application-status/<int:university_in_charge_id>/<int:application_id>/', views.update_college_application_status, name='update_college_application_status'),
-
-
-
-
 
 ]

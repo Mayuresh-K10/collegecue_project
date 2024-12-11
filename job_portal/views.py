@@ -6,7 +6,6 @@ from django.middleware.csrf import get_token # type: ignore
 from django.views.decorators.csrf import csrf_exempt # type: ignore
 from django.utils import timezone # type: ignore
 from django.db.models import Q # type: ignore
-from rest_framework.response import Response # type: ignore
 from login.models import CompanyInCharge, JobSeeker, UniversityInCharge, new_user
 from .models import Advertisement, Application, Application1, CollegeAdvertisement, CollegeMembership, CollegeScreeningAnswer, CollegeScreeningQuestion, CompanyScreeningAnswer, CompanyScreeningQuestion, Membership, Candidate1Status_not_eligible, Candidate1Status_rejected, Candidate1Status_selected, Candidate1Status_under_review, CandidateStatus_not_eligible, JobSeeker_Resume, CandidateStatus_rejected, CandidateStatus_selected, CandidateStatus_under_review, College, CollegeEnquiry, Interview, Job, Company, Job1, Resume, Student, StudentEnquiry, Visitor
 from .forms import AchievementForm, AdvertisementForm, AdvertisementForm1, Application1Form, ApplicationForm,CertificationForm, CollegeForm, CompanyForm, EducationForm, ExperienceForm, Job1Form, JobForm, JobseekerAchievementForm, JobseekerCertificationForm, JobseekerEducationForm, JobseekerExperienceForm, JobseekerObjectiveForm, JobseekerProjectForm, JobseekerPublicationForm, JobseekerReferenceForm, JobseekerResumeForm, MembershipForm, MembershipForm1,  ObjectiveForm, ProjectForm, PublicationForm, ReferenceForm, ResumeForm, StudentForm, VisitorRegistrationForm
@@ -18,7 +17,6 @@ from functools import reduce
 from django.core.exceptions import ObjectDoesNotExist # type: ignore
 from django.core.mail import send_mail # type: ignore
 from django.conf import settings # type: ignore
-from django.contrib.auth.models import User # type: ignore
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
@@ -116,7 +114,7 @@ def job_list(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
+
 ####################################################################NEW    
 def job_list_showcase(request):
     try:
@@ -201,7 +199,7 @@ def create_company_jobs(request, company_in_charge_id):
             job = form.save(commit=False)
             job.company = company
             job.company_in_charge = company_in_charge
-            job.save()  # unique_job_id_as_int will be set in `save()` method
+            job.save()
             return JsonResponse({'message': 'Job created successfully'}, status=201)
         except Exception as e:
             return JsonResponse({'error': f'Error saving job: {str(e)}'}, status=500)
@@ -340,7 +338,7 @@ def job_status(request, job_id):
 
 def fetch_all_companies(request):
     companies = Company.objects.filter(is_deleted=False).values(
-        'id','company_in_charge','name', 'email', 'phone', 'address', 'city', 'state', 
+        'id','company_in_charge','name', 'email', 'phone', 'address', 'city', 'state',
         'country', 'zipcode', 'website', 'about_company', 
         'sector_type', 'category', 'established_date', 
         'employee_size', 'Attachment'
@@ -348,25 +346,21 @@ def fetch_all_companies(request):
 
     return JsonResponse(list(companies), safe=False)
 
-
-
 @method_decorator(csrf_exempt, name='dispatch') 
 class CompanyListCreateView(View):
     def get(self, request, company_in_charge_id):
        auth_header = request.headers.get('Authorization')
        if not auth_header or not auth_header.startswith('Bearer '):
            return JsonResponse({'status': 'error', 'message': 'Token is missing or invalid format'}, status=400)
-       
+
        token = auth_header.split(' ')[1]
        try:
-           # Verify the CompanyInCharge with the provided token and ID
            company_in_charge = CompanyInCharge.objects.get(id=company_in_charge_id, token=token)
            
-           # Retrieve all companies under this company_in_charge
            companies = Company.objects.filter(company_in_charge=company_in_charge)
            if not companies.exists():
                return JsonResponse({'status': 'error', 'message': 'No companies found for this company in charge'}, status=404)
-           # Serialize company data to JSON
+
            companies_data = [
                {
                    'id': company.id,
@@ -393,9 +387,8 @@ class CompanyListCreateView(View):
        except CompanyInCharge.DoesNotExist:
            return JsonResponse({'status': 'error', 'message': 'Invalid token or company in charge ID'}, status=404)
        except Exception as e:
-           return JsonResponse({'error': str(e)}, status=500)   
-       
-        
+           return JsonResponse({'error': str(e)}, status=500)
+
     def post(self, request, company_in_charge_id):
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
@@ -409,7 +402,7 @@ class CompanyListCreateView(View):
             company_email = request.POST.get('email')
             if not company_email:
                 return JsonResponse({'status': 'error', 'message': 'Email is required'}, status=400)
-            
+
             if company_email != company_in_charge.official_email:
                 return JsonResponse({'status': 'error', 'message': 'Email does not match the email of the company in charge'}, status=400)
 
@@ -437,8 +430,6 @@ class CompanyListCreateView(View):
             return JsonResponse({'status': 'error', 'message': 'Invalid token or company in charge ID'}, status=404)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-        
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CompanyDetailView(View):
@@ -597,7 +588,7 @@ def company_status(request, status_choice, company_in_charge_id):
                 )
 
         return JsonResponse({'message': names}, status=200)
-    
+
     except CompanyInCharge.DoesNotExist:
         return JsonResponse({'error': 'Invalid token or company in charge not found.'}, status=404)
     except Exception as e:
@@ -608,7 +599,7 @@ def create_user_resume(request, user_id):
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({'status': 'error', 'message': 'Token is missing or invalid format'}, status=400)
-    
+
     token = auth_header.split(' ')[1]
 
     try:
@@ -662,7 +653,7 @@ def create_user_resume(request, user_id):
                         objective.save()
 
                 def save_related_data(form_class, data_list, related_name, existing_items):
-                    existing_items.delete()  
+                    existing_items.delete()
                     for item in data_list:
                         form = form_class(item)
                         if form.is_valid():
@@ -699,7 +690,7 @@ def create_user_resume(request, user_id):
 
 def get_user_resume_detail_by_id(request, user_id):
     auth_header = request.headers.get('Authorization')
-    
+
     try:
         if not auth_header or not auth_header.startswith('Bearer '):
             return JsonResponse({'status': 'error', 'message': 'Token is missing or invalid format'}, status=400)
@@ -823,7 +814,6 @@ def count_jobs_by_category(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=400)
-
 
 @csrf_exempt
 def fetch_jobs_by_exp_skills(request):
@@ -1169,8 +1159,6 @@ def user_application_status_counts(request, user_id):
         return JsonResponse({'error': 'Invalid token or new_user not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
-    
 
 @csrf_exempt
 def user_applied_jobs(request, user_id):
@@ -1188,20 +1176,16 @@ def user_applied_jobs(request, user_id):
         if not email:
             return JsonResponse({'error': 'Email parameter is required'}, status=400)
 
-        # Verify user
         user = new_user.objects.get(id=user_id, token=token, email=email)
 
-        # Fetch all jobs from Application
         jobs_from_application = Application.objects.filter(user=user).values(
             'job__job_title', 'job__company_name', 'status', 'applied_at'
         )
 
-        # Fetch all jobs from Application1
         jobs_from_application1 = Application1.objects.filter(user=user).values(
             'job__job_title', 'job__university_name', 'status', 'applied_at'
         )
 
-        # Combine the data
         applied_jobs = []
         for job in jobs_from_application:
             applied_jobs.append({
@@ -1219,15 +1203,12 @@ def user_applied_jobs(request, user_id):
                 'applied_at': job['applied_at'].strftime('%Y-%m-%d %H:%M:%S'),
             })
 
-        # Return response
         return JsonResponse({'applied_jobs': applied_jobs}, status=200, safe=False)
 
     except new_user.DoesNotExist:
         return JsonResponse({'error': 'Invalid token or new_user not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 @csrf_exempt
 def filter_user_applied_jobs(request, user_id):
@@ -1238,7 +1219,7 @@ def filter_user_applied_jobs(request, user_id):
             return JsonResponse({'error': 'Token is missing or invalid format'}, status=400)
 
         token = auth_header.split(' ')[1]
-		
+
         user = new_user.objects.get(id=user_id, token=token)
 
         email = request.GET.get('email')
@@ -1282,13 +1263,13 @@ def filter_user_applied_jobs(request, user_id):
             if isinstance(job, Job1): 
                 result.append({
                     'job_title': job.job_title,
-                    'university_in_charge': job.university_in_charge.university_name,  
+                    'university_in_charge': job.university_in_charge.university_name,
                     'job_location': job.location,
                     'job_type': job.job_type,
                     'status': application.status,
                     'applied_at': application.applied_at,
                 })
-            else:  
+            else:
                 result.append({
                     'job_title': job.job_title,
                     'company': job.company.name,
@@ -1338,8 +1319,6 @@ def sort_saved_jobs(request):
         return JsonResponse({'error': 'Job not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 @csrf_exempt
 def save_student(request,user_id):
@@ -1453,7 +1432,6 @@ def create_job_alert(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-
 @csrf_exempt
 def company_status_counts(request, company_in_charge_id):
     if request.method != 'GET':
@@ -1527,7 +1505,6 @@ def company_status_counts(request, company_in_charge_id):
         return JsonResponse({'error': 'Company not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @csrf_exempt
 def jobs_by_company(request, company_in_charge_id):
@@ -1643,7 +1620,7 @@ def save_screening_questions_and_answers_for_company(request, company_in_charge_
 def submit_application_with_screening_for_company(request, job_id, company_in_charge_id):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=405)
-    
+
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({'status': 'error', 'message': 'Token is missing or in an invalid format'}, status=400)
@@ -1757,8 +1734,6 @@ def submit_application_with_screening_for_company(request, job_id, company_in_ch
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class CollegeListCreateView(View):
     def post(self, request, university_in_charge_id):
@@ -1817,15 +1792,12 @@ class CollegeListCreateView(View):
         token = auth_header.split(' ')[1]
 
         try:
-            # Validate university in charge
             university_in_charge = UniversityInCharge.objects.get(id=university_in_charge_id, token=token)
         except UniversityInCharge.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Invalid token or university in charge not found'}, status=404)
 
-        # Retrieve all colleges associated with the university_in_charge
         colleges = College.objects.filter(university_in_charge=university_in_charge, is_deleted=False)
 
-        # Serialize data to JSON format
         college_data = [
             {
                 'id': college.id,
@@ -1861,7 +1833,7 @@ def submit_college_enquiry(request, user_id, college_id):
             return JsonResponse({'error': 'Token is missing or invalid format'}, status=400)
 
         token = auth_header.split(' ')[1]
-		
+
         user = new_user.objects.get(id=user_id, token=token)
 
         data = json.loads(request.body)
@@ -1937,7 +1909,6 @@ def get_user_enquiries(request, user_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
 @csrf_exempt
 def college_status_counts(request, university_in_charge_id):
     auth_header = request.headers.get('Authorization')
@@ -2004,7 +1975,6 @@ def college_status_counts(request, university_in_charge_id):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-        
 
 @csrf_exempt
 def create_job_for_college(request, university_incharge_id):
@@ -2037,7 +2007,7 @@ def create_job_for_college(request, university_incharge_id):
                 college = College.objects.get(id=college_id, university_in_charge=university_in_charge)
             except College.DoesNotExist:
                 return JsonResponse({'error': 'College not found'}, status=404)
-            
+
             if Job1.objects.filter(college=college).count() >= 100:
                 return JsonResponse({'message': 'Limit exceeded for job postings by this company'}, status=200)
 
@@ -2061,7 +2031,6 @@ def create_job_for_college(request, university_incharge_id):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method. Use POST.'}, status=405)
-
 
 @csrf_exempt
 def apply_college_job(request, job_id, university_in_charge_id):
@@ -2118,7 +2087,6 @@ def apply_college_job(request, job_id, university_in_charge_id):
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
 
 @csrf_exempt
 def register_visitor(request, college_id, university_in_charge_id):
@@ -2225,26 +2193,22 @@ def college_jobs_api(request, college_id, university_in_charge_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-###################################################NEW ADD 
+###################################################NEW ADD
 def job_detail_api(request, college_id, university_in_charge_id, job_id):
-    # Check for authorization header
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({'status': 'error', 'message': 'Token is missing or invalid format'}, status=400)
 
     token = auth_header.split(' ')[1]
 
-    # Verify university and token
     try:
         university_in_charge = UniversityInCharge.objects.get(id=university_in_charge_id, token=token)
     except UniversityInCharge.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Invalid token or university in charge not found'}, status=404)
 
-    # Fetch job details by job ID, college ID, and university in charge ID
     try:
         job = get_object_or_404(Job1, id=job_id, college_id=college_id, university_in_charge=university_in_charge)
 
-        # Return detailed job information as JSON
         job_data = {
             'id': job.id,
             'job_title': job.job_title,
@@ -2275,7 +2239,7 @@ def student_enquiries(request, college_id, university_in_charge_id):
            university_in_charge = UniversityInCharge.objects.get(id=university_in_charge_id)
         except UniversityInCharge.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'University in charge not found'}, status=404)
-        
+
         jobs = StudentEnquiry.objects.filter(college_id=college_id,university_in_charge=university_in_charge).values('first_name','last_name','course','status')
 
         if not jobs:
@@ -2303,9 +2267,8 @@ def jobs_by_college(request, university_in_charge_id):
         return JsonResponse({'status': 'error', 'message': 'Invalid token or university in charge not found'}, status=404)
 
     try:
-        # Extract data from the request body
         body = json.loads(request.body.decode('utf-8'))
-        college_name = body.get('college_name')  # Use body.get to fetch college_name
+        college_name = body.get('college_name')
         sort_order = body.get('sort_order')
         job_status = body.get('job_status')
 
@@ -2476,7 +2439,6 @@ def fetch_company_applicants_count(request, company_in_charge_id):
 
         return JsonResponse({
             'applicants_count': applicants_count,
-            # 'applicants': applicants_list
         })
 
     except CompanyInCharge.DoesNotExist:
@@ -2518,7 +2480,7 @@ def schedule_interview_from_company(request, company_in_charge_id):
                 'message': f'Interview is already scheduled for applicant ID {applicant_id}.'
             }, status=400)
 
-        applicant_email = applicant.email  
+        applicant_email = applicant.email
         
         new_user_obj = new_user.objects.filter(email=applicant_email).first()
         job_seeker_obj = JobSeeker.objects.filter(email=applicant_email).first()
@@ -2744,8 +2706,6 @@ def get_past_interviews_by_job_title(request, job_seeker_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-
 def fetch_colleges_jobs(request):
     if request.method == 'GET':
         try:
@@ -2791,14 +2751,12 @@ def create_jobseeker_resume(request, jobseeker_id):
 
                 resume = JobSeeker_Resume.objects.filter(email=jobseeker_email, job_seeker=jobseeker).first()
 
-                # Create or update resume form
                 resume_form = JobseekerResumeForm(request.POST, request.FILES, instance=resume) if resume else JobseekerResumeForm(request.POST, request.FILES)
                 if resume_form.is_valid():
                     resume = resume_form.save(commit=False)
                     resume.job_seeker = jobseeker
-                    resume.save()  # Ensure resume is saved with an ID
+                    resume.save()
 
-                    # Handle attachment if required
                     delete_attachment = resume_form.cleaned_data.get('delete', False)
                     new_attachment = resume_form.cleaned_data.get('Attachment')
 
@@ -2810,7 +2768,6 @@ def create_jobseeker_resume(request, jobseeker_id):
                         resume.Attachment = None
                         resume.save()
 
-                    # Objective data
                     objective_data = request.POST.get('objective', '{}')
                     if objective_data:
                         objective_data = json.loads(objective_data)
@@ -2821,7 +2778,6 @@ def create_jobseeker_resume(request, jobseeker_id):
                             objective.job_seeker = jobseeker
                             objective.save()
 
-                    # Helper to save related data
                     def save_related_data(form_class, data_list, related_name, existing_items):
                         existing_items.delete()
                         for item in data_list:
@@ -2869,7 +2825,6 @@ def create_jobseeker_resume(request, jobseeker_id):
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
-    
 def get_jobseeker_resume_detail_by_id(request, jobseeker_id):
     auth_header = request.headers.get('Authorization')
     
@@ -2882,13 +2837,12 @@ def get_jobseeker_resume_detail_by_id(request, jobseeker_id):
         jobseeker = JobSeeker.objects.get(id=jobseeker_id, token=token)
 
         if request.method == 'GET':
-            # Get the first or latest resume associated with the job seeker
             resume = JobSeeker_Resume.objects.filter(job_seeker=jobseeker).first()
             if not resume:
                 return JsonResponse({'error': 'Resume not found for the specified job seeker'}, status=404)
 
             resume_data = {
-                "first_name": resume.first_name, 
+                "first_name": resume.first_name,
                 "last_name": resume.last_name,
                 "email": resume.email,
                 "phone": resume.phone,
@@ -2974,8 +2928,6 @@ def get_jobseeker_resume_detail_by_id(request, jobseeker_id):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-       
-
 @csrf_exempt
 def college_status(request, status_choice, university_in_charge_id):
     auth_header = request.headers.get('Authorization')
@@ -3023,8 +2975,6 @@ def college_status(request, status_choice, university_in_charge_id):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 @csrf_exempt
 def save_screening_questions_and_answers_for_college(request, university_incharge_id):
@@ -3220,8 +3170,6 @@ def submit_application_with_screening_for_college(request, job_id, university_in
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
-
-
 @csrf_exempt
 def jobseeker_application_status_counts(request, jobseeker_id):
     if request.method != 'GET':
@@ -3257,7 +3205,6 @@ def jobseeker_application_status_counts(request, jobseeker_id):
             Application1.objects.filter(job_seeker=jobseeker, status='rejected').count()
         )
 
-        # Monthly counts
         jobs_applied_by_month = (
             list(Application.objects.filter(job_seeker=jobseeker)
                  .annotate(month=TruncMonth('applied_at'))
@@ -3729,8 +3676,6 @@ def membership_form_view1(request, university_in_charge_id):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
-
-
 @csrf_exempt
 def user_apply_for_job(request, job_id, user_id):
     if request.method != 'GET':
@@ -3746,7 +3691,7 @@ def user_apply_for_job(request, job_id, user_id):
         user = new_user.objects.get(id=user_id, token=token)
     except new_user.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Invalid token or user not found'}, status=404)
-    
+
     try:
         resume = Resume.objects.get(user_id=user_id)
         print(resume)
@@ -3911,31 +3856,24 @@ def jobseeker_apply_for_job(request, job_id, jobseeker_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-
 @csrf_exempt
 def fetch_company_job_applications(request, company_in_charge_id, job_id):
-    # Check for the authorization token
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({'error': 'Token is missing or not in the correct format'}, status=400)
 
     token = auth_header.split(' ')[1]
 
-    # Validate the token with the company in charge
     try:
         company_in_charge = CompanyInCharge.objects.get(id=company_in_charge_id, token=token)
     except CompanyInCharge.DoesNotExist:
         return JsonResponse({'error': 'Invalid token or company in charge not found'}, status=401)
 
     try:
-        # Fetch the job using company_in_charge and job_id
         job = get_object_or_404(Job, company_in_charge=company_in_charge, unique_job_id_as_int=job_id)
         
-        # Fetch the applications associated with the job
         applications = Application.objects.filter(job=job)
 
-        # Build the applications list
         applications_list = [{
             'id': app.id,
             'first_name': app.first_name,
@@ -3949,7 +3887,6 @@ def fetch_company_job_applications(request, company_in_charge_id, job_id):
             'applied_at': app.applied_at,
         } for app in applications]
 
-        # Build the job details
         job_details = {
             'job_title': job.job_title,
             'company': job.company.name,
@@ -3968,7 +3905,6 @@ def fetch_company_job_applications(request, company_in_charge_id, job_id):
             'must_have_qualification': job.must_have_qualification,
         }
 
-        # Combine job details and applications into the final response structure
         response_data = {
             'jobdetails': job_details,
             'applicants': applications_list
@@ -3982,27 +3918,22 @@ def fetch_company_job_applications(request, company_in_charge_id, job_id):
 
 @csrf_exempt
 def fetch_college_job_applications(request, university_in_charge_id, job_id):
-    # Check for the authorization token
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({'error': 'Token is missing or not in the correct format'}, status=400)
 
     token = auth_header.split(' ')[1]
 
-    # Validate the token with the university in charge
     try:
         university_in_charge = UniversityInCharge.objects.get(id=university_in_charge_id, token=token)
     except UniversityInCharge.DoesNotExist:
         return JsonResponse({'error': 'Invalid token or university in charge not found'}, status=401)
 
     try:
-        # Fetch the job using university_in_charge and job_id
         job = get_object_or_404(Job1, university_in_charge=university_in_charge, id=job_id)
 
-        # Fetch the applications associated with the job
         applications = Application1.objects.filter(job=job)
 
-        # Build the applications list
         applications_list = [{
             'id': app.id,
             'first_name': app.first_name,
@@ -4016,7 +3947,6 @@ def fetch_college_job_applications(request, university_in_charge_id, job_id):
             'applied_at': app.applied_at,
         } for app in applications]
 
-        # Build the job details
         job_details = {
             'job_title': job.job_title,
             'college': job.college.college_name,
@@ -4034,7 +3964,6 @@ def fetch_college_job_applications(request, university_in_charge_id, job_id):
             'must_have_qualification': job.must_have_qualification,
         }
 
-        # Combine job details and applications into the final response structure
         response_data = {
             'jobdetails': job_details,
             'applicants': applications_list
@@ -4076,14 +4005,12 @@ def fetch_college_applicants_count(request, university_in_charge_id):
 
         return JsonResponse({
             'applicants_count': applicants_count,
-            # 'applicants': applicants_list
         })
 
     except UniversityInCharge.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'University in  charge not found'}, status=404)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500) 
-    
+        return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
 def get_job_application_summary(request, company_in_charge_id):
@@ -4107,7 +4034,6 @@ def get_job_application_summary(request, company_in_charge_id):
     job_summary = list(job_data)
 
     return JsonResponse({'Posted_Jobs': job_summary})
-
 
 @csrf_exempt
 def get_application_details(request, company_in_charge_id):
@@ -4163,8 +4089,6 @@ def update_company_application_status(request, company_in_charge_id, application
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-    
 
 @csrf_exempt
 def update_college_application_status(request, university_in_charge_id, application_id):
@@ -4187,7 +4111,7 @@ def update_college_application_status(request, university_in_charge_id, applicat
     try:
         data = json.loads(request.body)
         app_status = data.get("application_status")
-        
+
         if not app_status:
             return JsonResponse({'error': 'Application status is required'}, status=400)
 
@@ -4197,7 +4121,6 @@ def update_college_application_status(request, university_in_charge_id, applicat
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
-
 
 
 """

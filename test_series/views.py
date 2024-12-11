@@ -12,7 +12,6 @@ from django.conf import settings # type: ignore
 from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
 from django.views import View
-# from django.db.models import Q
 from .models import new_user, JobSeeker, CompanyInCharge, UniversityInCharge
 
 
@@ -989,62 +988,3 @@ def create_notification3(request):
     except Exception as e:
         return api_response({"status": "error", "message": str(e)}, status=500)
 
-@csrf_exempt
-def lead_submission_view(request):
-    try:
-        if request.method == "POST":
-            try:
-                data = json.loads(request.body)
-            except json.JSONDecodeError:
-                return JsonResponse({"status": "error", "message": "Invalid JSON."}, status=400)
-
-            form = LeadForm(data)
-            if form.is_valid():
-                lead = form.save()
-                return JsonResponse({
-                    "status": "success",
-                    "message": "Lead submitted successfully.",
-                    "data": {
-                        "id": lead.id,
-                        "name": lead.name,
-                        "email": lead.email,
-                        "mobile": lead.mobile,
-                        "page": lead.page,
-                        "time_duration": lead.time_duration,
-                        "approx_cost_to_invest": float(lead.approx_cost_to_invest),
-                        "targeted_audience": lead.targeted_audience,
-                    }
-                })
-            else:
-                return JsonResponse({"status": "error", "errors": form.errors}, status=400)
-        else:
-            return JsonResponse({"status": "error", "message": "Method not allowed."}, status=405)
-    except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
-
-def fetch_targeted_audience_choices(request):
-    try:
-        if request.method == 'GET':
-            values_list = [choice[0] for choice in Lead.TARGETED_AUDIENCE_CHOICES]
-
-            return JsonResponse({'status': 'success', 'choices': values_list})
-
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-def fetch_page_choices(request):
-    try:
-        if request.method == 'GET':
-            page_choices = Lead.PAGE_CHOICES
-            values_list = [choice[0] for choice in page_choices]
-
-            return JsonResponse({'status': 'success', 'choices': values_list})
-
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

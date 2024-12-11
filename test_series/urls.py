@@ -31,8 +31,5 @@ urlpatterns = [
     path('Company-notifications/', views.get_notifications3, name='get_notifications3'),
     path('Company-notifications/read/<int:notification_id>/', views.mark_as_read3, name='mark_as_read3'),
     path('Company-notifications/create/', views.create_notification3, name='create_notification3'),
-    path('submit-lead/', views.lead_submission_view, name='submit-lead'),
-    path('fetch-targeted-audience-choices/', views.fetch_targeted_audience_choices, name='fetch_targeted_audience_choices'),
-    path('fetch-page-choices/', views.fetch_page_choices, name='fetch_page_choices'),
 
 ]

@@ -42,7 +42,7 @@ class Command(BaseCommand):
             sector_types_df = pd.read_excel(sector_types_path)
             country_names_df = pd.read_excel(country_names_path)
             statuses_df = pd.read_excel(statuses_path)
-            
+
             company_in_charge, _ = CompanyInCharge.objects.get_or_create(company_name="Default CompanyInCharge")
 
             max_rows = max(
