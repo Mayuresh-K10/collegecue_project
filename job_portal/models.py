@@ -1308,7 +1308,7 @@ class CollegeAdvertisement(models.Model):
 #    target_audience = models.CharField(max_length=100)
 #
 #    def __str__(self):
-#        
+#
 #        return self.name
 #
 #class CollegeAdvertisement(models.Model):
