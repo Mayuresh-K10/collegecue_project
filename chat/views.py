@@ -46,7 +46,7 @@ def send_chat(request):
     recipient_email = request.data.get("recipient_email")
     recipient_model = request.data.get("recipient_model")
     content = request.data.get("content", "").strip() or ""
-    subject = request.data.get("subject", "").strip() or "" 
+    subject = request.data.get("subject", "").strip() or ""
 
     if not all([recipient_email, recipient_model]):
         return JsonResponse({"error": "Recipient email and recipient model are required"}, status=400)

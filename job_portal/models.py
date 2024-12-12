@@ -833,7 +833,7 @@ class CollegeAdvertisement(models.Model):
 #    status = models.CharField(max_length=20,default='under_review')
 #    company_name = models.CharField(max_length=255)
 #    job_id = models.IntegerField()
-#    
+#
 #class Candidate1Status_selected(models.Model):
 #    first_name = models.CharField(max_length=255,default='John')
 #    last_name = models.CharField(max_length=255,default='Doe')
@@ -1156,7 +1156,7 @@ class CollegeAdvertisement(models.Model):
 #    def __str__(self):
 #        sender_email = self.university_in_charge.official_email if self.university_in_charge else "Unknown Sender"
 #        recipient_email = (
-#            self.receiptent_new_user.email if self.receiptent_new_user else 
+#            self.receiptent_new_user.email if self.receiptent_new_user else
 #            (self.receiptent_job_seeker.email if self.receiptent_job_seeker else "Unknown Recipient")
 #        )
 #        return f"{sender_email} -> {recipient_email}"
@@ -1239,7 +1239,7 @@ class CollegeAdvertisement(models.Model):
 #        return self.title
 #
 #class JobSeeker_Reference(models.Model):
-#    job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE) 
+#    job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE)
 #    resume = models.ForeignKey(JobSeeker_Resume, related_name='references', on_delete=models.CASCADE)
 #    name = models.CharField(max_length=100, default='Unknown')
 #    contact_info = models.CharField(max_length=100, default='Not provided')

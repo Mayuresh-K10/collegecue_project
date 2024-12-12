@@ -994,7 +994,7 @@ class ChangePasswordJobSeekerView(View):
 
             if not check_password(old_password, job_seeker.password):
                 return JsonResponse({'error': 'Old password is incorrect'}, status=400)
-            
+
             job_seeker.password = make_password(new_password)
             job_seeker.save()
 
