@@ -861,7 +861,7 @@ class CollegeAdvertisement(models.Model):
 #    status = models.CharField(max_length=20,default='under_review')
 #    college_id = models.IntegerField()
 #    job_id = models.IntegerField()
-#    
+#
 #
 #class Message(models.Model):
 #    company_in_charge = models.ForeignKey(CompanyInCharge, on_delete=models.CASCADE, null=True, blank=True)
@@ -1249,7 +1249,7 @@ class CollegeAdvertisement(models.Model):
 #        return self.name
 #
 #class JobSeeker_Certification(models.Model):
-#    job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE) 
+#    job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE)
 #    resume = models.ForeignKey(JobSeeker_Resume, related_name='certifications', on_delete=models.CASCADE)
 #    name = models.CharField(max_length=100, default='Unknown')
 #    start_date = models.DateField(null=True, blank=True)
