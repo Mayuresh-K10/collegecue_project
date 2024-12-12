@@ -925,7 +925,7 @@ class CollegeAdvertisement(models.Model):
 #
 #    def __str__(self):
 #        return f"Answer for {self.question.question_text[:50]}"
-#    
+#
 #class CollegeScreeningQuestion(models.Model):
 #    university_in_charge = models.ForeignKey(UniversityInCharge, on_delete=models.CASCADE)
 #    job = models.ForeignKey('Job1', related_name='screening_questions', on_delete=models.CASCADE)
