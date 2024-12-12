@@ -1011,7 +1011,7 @@ class CollegeAdvertisement(models.Model):
 #
 #    def __str__(self):
 #        return self.job_title
-#    
+#
 #    class Meta:
 #        db_table = 'job1'  # Custom table name for Job1
 #
@@ -1133,8 +1133,8 @@ class CollegeAdvertisement(models.Model):
 #    user = models.ForeignKey(new_user, on_delete=models.CASCADE,null=True, blank=True)
 #    job_seeker = models.ForeignKey(JobSeeker, on_delete=models.CASCADE,null=True, blank=True)
 #    company_in_charge = models.ForeignKey(CompanyInCharge, on_delete=models.CASCADE,null=True, blank=True)
-#   
-#    
+#
+#
 #    def time_left(self):
 #        """Returns the time left until the interview, or None if in the past"""
 #        time_diff = self.interview_date - timezone.now()
@@ -1296,7 +1296,7 @@ class CollegeAdvertisement(models.Model):
 #
 #    def __str__(self):
 #        return self.name
-#    
+#
 #class Advertisement(models.Model):
 #    company_in_charge = models.ForeignKey(CompanyInCharge, on_delete=models.CASCADE, null=True, blank=True)
 #    name = models.CharField(max_length=100)
