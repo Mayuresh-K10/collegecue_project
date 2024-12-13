@@ -58,6 +58,22 @@ class StartProctoringSessionView(View):
                 status='ongoing'
             )
 
+            user_email = user.email
+            try:
+                send_mail(
+                    "Proctoring Session Started",
+                    f"Your proctoring session for the exam '{exam.name}' has started.",
+                    settings.EMAIL_HOST_USER,
+                    [user_email]
+                )
+            except Exception as email_error:
+                return JsonResponse({
+                    'success': True,
+                    'session_id': session.id,
+                    'error': f'Failed to send email to {user_email}',
+                    'details': str(email_error)
+                }, status=500)
+
             return JsonResponse({'success': True, 'session_id': session.id}, status=200)
 
         except (json.JSONDecodeError, IndexError):

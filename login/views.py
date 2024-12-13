@@ -922,6 +922,14 @@ def login_job_seeker(request):
             job_seeker.token = generate_unique_token()
             job_seeker.save()
 
+            send_mail(
+                    subject='Login Successful',
+                    message=f'Hello {job_seeker.email},\n\nYou have successfully logged in.',
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[job_seeker.email],
+                    fail_silently=False,
+                )
+
             return JsonResponse({'message': 'Login successful',
                                  'unique_token': job_seeker.token,
                                  'userid':job_seeker.id,
